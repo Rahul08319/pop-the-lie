@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useGameEngine } from '@/game/useGameEngine';
 import { Difficulty } from '@/game/types';
 import { BalloonComponent } from './BalloonComponent';
@@ -13,7 +13,20 @@ import { NameInputDialog } from './NameInputDialog';
 import { addToLeaderboard } from './Leaderboard';
 
 export function GameArena() {
-  const { gameState, balloons, floatingScores, startGame, popBalloon, pauseGame, resumeGame, quitToMenu } = useGameEngine();
+  const { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu } = useGameEngine();
+  const [showTutorial, setShowTutorial] = useState(true);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [shaking, setShaking] = useState(false);
+
+  // Trigger screen shake on life loss
+  useEffect(() => {
+    if (lifeLostAt > 0) {
+      setShaking(true);
+      const t = setTimeout(() => setShaking(false), 500);
+      return () => clearTimeout(t);
+    }
+  }, [lifeLostAt]);
   const [showTutorial, setShowTutorial] = useState(true);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showNameInput, setShowNameInput] = useState(false);
