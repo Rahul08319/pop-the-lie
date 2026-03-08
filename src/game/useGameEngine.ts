@@ -36,12 +36,15 @@ export function useGameEngine() {
     setBalloons(prev => [...prev, balloon]);
   }, []);
 
+  const [lifeLostAt, setLifeLostAt] = useState<number>(0);
+
   const startGame = useCallback((difficulty: Difficulty = 'medium') => {
     balloonIdCounter = 0;
     setBalloons([]);
     setFloatingScores([]);
     const initial = getInitialState(difficulty);
     setGameState({ ...initial, status: 'playing', highScore: initial.highScore });
+    startBackgroundMusic();
   }, []);
 
   const pauseGame = useCallback(() => {
