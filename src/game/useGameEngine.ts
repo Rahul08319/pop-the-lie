@@ -58,6 +58,7 @@ export function useGameEngine() {
   const quitToMenu = useCallback(() => {
     setBalloons([]);
     setFloatingScores([]);
+    stopBackgroundMusic();
     setGameState(gs => ({ ...getInitialState(gs.difficulty), highScore: gs.highScore }));
   }, []);
 
