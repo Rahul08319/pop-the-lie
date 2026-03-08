@@ -193,5 +193,5 @@ export function useGameEngine() {
     return () => clearInterval(interval);
   }, []);
 
-  return { gameState, balloons, floatingScores, startGame, popBalloon, pauseGame, resumeGame, quitToMenu };
+  return { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu };
 }
