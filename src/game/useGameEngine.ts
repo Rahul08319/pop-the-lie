@@ -1,44 +1,47 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { Balloon, GameState, BALLOON_COLORS } from './types';
+import { Balloon, GameState, BALLOON_COLORS, Difficulty, DIFFICULTY_CONFIGS } from './types';
 import { generateEquation } from './mathGenerator';
+import { playPopCorrect, playPopWrong, playCombo, playGameOver, hapticPop, hapticWrong, hapticGameOver } from './audioManager';
 
-const INITIAL_STATE: GameState = {
+const getInitialState = (difficulty: Difficulty = 'medium'): GameState => ({
   status: 'menu',
   score: 0,
-  lives: 3,
+  lives: DIFFICULTY_CONFIGS[difficulty].lives,
   level: 1,
   combo: 0,
   bestCombo: 0,
   highScore: parseInt(localStorage.getItem('popTheLie_highScore') || '0'),
   balloonsPopped: 0,
   missedLies: 0,
-};
+  difficulty,
+});
 
 let balloonIdCounter = 0;
 
 export function useGameEngine() {
-  const [gameState, setGameState] = useState<GameState>(INITIAL_STATE);
+  const [gameState, setGameState] = useState<GameState>(getInitialState());
   const [balloons, setBalloons] = useState<Balloon[]>([]);
   const [floatingScores, setFloatingScores] = useState<{ id: string; x: number; y: number; text: string; type: 'good' | 'bad' }[]>([]);
   const spawnIntervalRef = useRef<number | null>(null);
-  const cleanupIntervalRef = useRef<number | null>(null);
 
-  const spawnBalloon = useCallback((level: number) => {
+  const spawnBalloon = useCallback((level: number, difficulty: Difficulty) => {
+    const config = DIFFICULTY_CONFIGS[difficulty];
     const id = `balloon-${++balloonIdCounter}`;
-    const equation = generateEquation(level);
+    const equation = generateEquation(level, config.lieChance);
     const color = BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)];
-    const x = 10 + Math.random() * 75; // 10-85% from left
-    const speed = Math.max(4, 10 - level * 0.5) + Math.random() * 3;
+    const x = 10 + Math.random() * 75;
+    const speed = Math.max(config.speedBase * 0.4, config.speedBase - level * config.speedScaling) + Math.random() * 3;
 
     const balloon: Balloon = { id, equation, x, color, speed, popped: false, createdAt: Date.now() };
     setBalloons(prev => [...prev, balloon]);
   }, []);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback((difficulty: Difficulty = 'medium') => {
     balloonIdCounter = 0;
     setBalloons([]);
     setFloatingScores([]);
-    setGameState({ ...INITIAL_STATE, status: 'playing', highScore: INITIAL_STATE.highScore });
+    const initial = getInitialState(difficulty);
+    setGameState({ ...initial, status: 'playing', highScore: initial.highScore });
   }, []);
 
   const popBalloon = useCallback((id: string, clientX: number, clientY: number) => {
@@ -52,7 +55,6 @@ export function useGameEngine() {
         if (gs.status !== 'playing') return gs;
         
         if (isLie) {
-          // Correct pop! It was a lie
           const comboBonus = gs.combo >= 3 ? gs.combo * 5 : 0;
           const points = 10 + gs.level * 2 + comboBonus;
           const newCombo = gs.combo + 1;
@@ -63,6 +65,11 @@ export function useGameEngine() {
           if (newHighScore > gs.highScore) {
             localStorage.setItem('popTheLie_highScore', String(newHighScore));
           }
+
+          // Sound & haptic
+          playPopCorrect();
+          hapticPop();
+          if (newCombo >= 3) playCombo();
 
           setFloatingScores(fs => [...fs, {
             id: `fs-${Date.now()}`,
@@ -82,9 +89,11 @@ export function useGameEngine() {
             highScore: newHighScore,
           };
         } else {
-          // Wrong! It was correct equation
           const newLives = gs.lives - 1;
           
+          playPopWrong();
+          hapticWrong();
+
           setFloatingScores(fs => [...fs, {
             id: `fs-${Date.now()}`,
             x: clientX,
@@ -94,6 +103,7 @@ export function useGameEngine() {
           }]);
 
           if (newLives <= 0) {
+            setTimeout(() => { playGameOver(); hapticGameOver(); }, 300);
             return { ...gs, lives: 0, combo: 0, status: 'gameover' };
           }
           return { ...gs, lives: newLives, combo: 0 };
@@ -104,7 +114,7 @@ export function useGameEngine() {
     });
   }, []);
 
-  // Handle missed lies (incorrect equations that float away)
+  // Handle missed lies
   useEffect(() => {
     if (gameState.status !== 'playing') return;
     
@@ -118,13 +128,13 @@ export function useGameEngine() {
             if (gs.status !== 'playing') return gs;
             const newLives = gs.lives - escaped.length;
             if (newLives <= 0) {
+              setTimeout(() => { playGameOver(); hapticGameOver(); }, 300);
               return { ...gs, lives: 0, status: 'gameover', missedLies: gs.missedLies + escaped.length };
             }
             return { ...gs, lives: newLives, combo: 0, missedLies: gs.missedLies + escaped.length };
           });
         }
 
-        // Clean old balloons
         return prev.filter(b => {
           if (b.popped) return (now - b.createdAt) < 1000;
           return (now - b.createdAt) < (b.speed + 1) * 1000;
@@ -142,18 +152,19 @@ export function useGameEngine() {
       return;
     }
 
-    const spawnRate = Math.max(800, 2500 - gameState.level * 150);
+    const config = DIFFICULTY_CONFIGS[gameState.difficulty];
+    const spawnRate = Math.max(800, config.spawnRateBase - gameState.level * config.spawnRateScaling);
     
-    spawnBalloon(gameState.level);
+    spawnBalloon(gameState.level, gameState.difficulty);
     
     spawnIntervalRef.current = window.setInterval(() => {
-      spawnBalloon(gameState.level);
+      spawnBalloon(gameState.level, gameState.difficulty);
     }, spawnRate);
 
     return () => {
       if (spawnIntervalRef.current) clearInterval(spawnIntervalRef.current);
     };
-  }, [gameState.status, gameState.level, spawnBalloon]);
+  }, [gameState.status, gameState.level, gameState.difficulty, spawnBalloon]);
 
   // Clean floating scores
   useEffect(() => {

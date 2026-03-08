@@ -6,8 +6,8 @@ function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function generateEquation(level: number): MathEquation {
-  const isCorrect = Math.random() > 0.45; // ~45% are lies
+function generateEquation(level: number, lieChance: number = 0.45): MathEquation {
+  const isCorrect = Math.random() > lieChance;
   const maxNum = Math.min(5 + level * 3, 50);
   const ops: Op[] = level < 3 ? ['+', '-'] : level < 6 ? ['+', '-', '×'] : ['+', '-', '×', '÷'];
   const op = ops[randInt(0, ops.length - 1)];

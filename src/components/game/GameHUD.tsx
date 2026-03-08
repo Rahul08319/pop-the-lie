@@ -1,10 +1,12 @@
-import { GameState } from '@/game/types';
+import { GameState, DIFFICULTY_CONFIGS } from '@/game/types';
 
 interface GameHUDProps {
   gameState: GameState;
 }
 
 export function GameHUD({ gameState }: GameHUDProps) {
+  const config = DIFFICULTY_CONFIGS[gameState.difficulty];
+
   return (
     <div className="absolute top-0 left-0 right-0 z-30 p-3 flex items-start justify-between pointer-events-none">
       {/* Score */}
@@ -28,9 +30,11 @@ export function GameHUD({ gameState }: GameHUDProps) {
 
       {/* Lives */}
       <div className="bg-card/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-border">
-        <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Lives</div>
+        <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+          {config.emoji} Lives
+        </div>
         <div className="text-2xl">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: config.lives }).map((_, i) => (
             <span key={i} className={i < gameState.lives ? '' : 'opacity-20'}>❤️</span>
           ))}
         </div>
