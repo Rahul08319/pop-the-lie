@@ -133,10 +133,38 @@
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-8px); }
-  40% { transform: translateX(8px); }
-  60% { transform: translateX(-6px); }
-  80% { transform: translateX(6px); }
+  10% { transform: translateX(-10px) rotate(-1deg); }
+  20% { transform: translateX(10px) rotate(1deg); }
+  30% { transform: translateX(-8px) rotate(-0.5deg); }
+  40% { transform: translateX(8px) rotate(0.5deg); }
+  50% { transform: translateX(-5px); }
+  60% { transform: translateX(5px); }
+  70% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+@keyframes life-lost-flash {
+  0% { background-color: hsl(0 80% 55% / 0.4); }
+  100% { background-color: transparent; }
+}
+
+@keyframes particle-explode {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--px, 0), var(--py, 0)) scale(0);
+    opacity: 0;
+  }
+}
+
+.animate-life-lost-flash {
+  animation: life-lost-flash 0.5s ease-out forwards;
+}
+
+.animate-particle-explode {
+  animation: particle-explode 0.6s ease-out forwards;
 }
 
 @keyframes pulse-glow {
