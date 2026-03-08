@@ -1,19 +1,29 @@
-import { GameState } from '@/game/types';
+import { useState } from 'react';
+import { GameState, Difficulty, DIFFICULTY_CONFIGS } from '@/game/types';
 import { StarField } from './StarField';
+import { playButtonClick } from '@/game/audioManager';
 
 interface GameOverProps {
   gameState: GameState;
-  onRestart: () => void;
+  onRestart: (difficulty: Difficulty) => void;
 }
 
 export function GameOverScreen({ gameState, onRestart }: GameOverProps) {
   const isNewHighScore = gameState.score >= gameState.highScore && gameState.score > 0;
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(gameState.difficulty);
+  const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
+
+  const difficultyColors: Record<Difficulty, string> = {
+    easy: 'from-accent to-accent/70 border-accent/50',
+    medium: 'from-primary to-primary/70 border-primary/50',
+    hard: 'from-secondary to-secondary/70 border-secondary/50',
+  };
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-game-sky-top to-game-sky-bottom overflow-hidden">
       <StarField />
 
-      <div className="relative z-10 flex flex-col items-center gap-6 px-6">
+      <div className="relative z-10 flex flex-col items-center gap-5 px-6">
         <h1 className="font-game-title text-5xl md:text-7xl text-secondary drop-shadow-lg">
           Game Over
         </h1>
@@ -24,35 +34,55 @@ export function GameOverScreen({ gameState, onRestart }: GameOverProps) {
           </div>
         )}
 
-        <div className="bg-card/60 backdrop-blur-md rounded-2xl p-6 min-w-[280px] border border-border">
-          <div className="space-y-4">
+        <div className="bg-card/60 backdrop-blur-md rounded-2xl p-5 min-w-[280px] border border-border">
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold">Score</span>
-              <span className="font-game-title text-3xl text-game-score">{gameState.score}</span>
+              <span className="text-muted-foreground font-semibold text-sm">Score</span>
+              <span className="font-game-title text-2xl text-game-score">{gameState.score}</span>
             </div>
             <div className="h-px bg-border" />
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold">Level Reached</span>
-              <span className="font-game-title text-xl text-primary">{gameState.level}</span>
+              <span className="text-muted-foreground font-semibold text-sm">Level</span>
+              <span className="font-game-title text-lg text-primary">{gameState.level}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold">Lies Popped</span>
-              <span className="font-game-title text-xl text-accent">{gameState.balloonsPopped}</span>
+              <span className="text-muted-foreground font-semibold text-sm">Lies Popped</span>
+              <span className="font-game-title text-lg text-accent">{gameState.balloonsPopped}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold">Best Combo</span>
-              <span className="font-game-title text-xl text-game-combo">x{gameState.bestCombo}</span>
+              <span className="text-muted-foreground font-semibold text-sm">Best Combo</span>
+              <span className="font-game-title text-lg text-game-combo">x{gameState.bestCombo}</span>
             </div>
-            <div className="h-px bg-border" />
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold">High Score</span>
-              <span className="font-game-title text-xl text-game-score">{gameState.highScore}</span>
+              <span className="text-muted-foreground font-semibold text-sm">Difficulty</span>
+              <span className="font-game-title text-lg">{DIFFICULTY_CONFIGS[gameState.difficulty].emoji} {DIFFICULTY_CONFIGS[gameState.difficulty].label}</span>
             </div>
           </div>
         </div>
 
+        {/* Quick difficulty change */}
+        <div className="flex gap-2">
+          {difficulties.map((diff) => {
+            const config = DIFFICULTY_CONFIGS[diff];
+            const isSelected = selectedDifficulty === diff;
+            return (
+              <button
+                key={diff}
+                onClick={() => { setSelectedDifficulty(diff); playButtonClick(); }}
+                className={`rounded-lg px-3 py-1.5 text-xs font-game-title border transition-all ${
+                  isSelected
+                    ? `bg-gradient-to-b ${difficultyColors[diff]} scale-105`
+                    : 'bg-card/40 border-border/50'
+                }`}
+              >
+                {config.emoji} {config.label}
+              </button>
+            );
+          })}
+        </div>
+
         <button
-          onClick={onRestart}
+          onClick={() => { playButtonClick(); onRestart(selectedDifficulty); }}
           className="font-game-title text-xl bg-gradient-to-r from-primary to-game-score px-10 py-3 rounded-full text-primary-foreground shadow-xl hover:scale-105 active:scale-95 transition-transform"
         >
           🔄 Play Again

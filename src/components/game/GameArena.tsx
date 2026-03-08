@@ -1,4 +1,5 @@
 import { useGameEngine } from '@/game/useGameEngine';
+import { Difficulty } from '@/game/types';
 import { BalloonComponent } from './BalloonComponent';
 import { GameHUD } from './GameHUD';
 import { MainMenu } from './MainMenu';
@@ -9,11 +10,11 @@ export function GameArena() {
   const { gameState, balloons, floatingScores, startGame, popBalloon } = useGameEngine();
 
   if (gameState.status === 'menu') {
-    return <MainMenu highScore={gameState.highScore} onStart={startGame} />;
+    return <MainMenu highScore={gameState.highScore} onStart={(diff: Difficulty) => startGame(diff)} />;
   }
 
   if (gameState.status === 'gameover') {
-    return <GameOverScreen gameState={gameState} onRestart={startGame} />;
+    return <GameOverScreen gameState={gameState} onRestart={(diff: Difficulty) => startGame(diff)} />;
   }
 
   return (
@@ -21,18 +22,12 @@ export function GameArena() {
       <StarField />
       <GameHUD gameState={gameState} />
 
-      {/* Balloons */}
       <div className="absolute inset-0 z-10">
         {balloons.map(balloon => (
-          <BalloonComponent
-            key={balloon.id}
-            balloon={balloon}
-            onPop={popBalloon}
-          />
+          <BalloonComponent key={balloon.id} balloon={balloon} onPop={popBalloon} />
         ))}
       </div>
 
-      {/* Floating score text */}
       {floatingScores.map(fs => (
         <div
           key={fs.id}
@@ -45,7 +40,6 @@ export function GameArena() {
         </div>
       ))}
 
-      {/* Lives lost shake effect */}
       {gameState.lives <= 1 && (
         <div className="absolute inset-0 border-4 border-game-wrong-glow/30 rounded-none pointer-events-none animate-pulse z-20" />
       )}
