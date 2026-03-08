@@ -19,7 +19,6 @@ export function GameArena() {
   const [showNameInput, setShowNameInput] = useState(false);
   const [shaking, setShaking] = useState(false);
 
-  // Trigger screen shake on life loss
   useEffect(() => {
     if (lifeLostAt > 0) {
       setShaking(true);
@@ -27,9 +26,15 @@ export function GameArena() {
       return () => clearTimeout(t);
     }
   }, [lifeLostAt]);
-  const [showTutorial, setShowTutorial] = useState(true);
-  const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [showNameInput, setShowNameInput] = useState(false);
+
+  const particles = useMemo(() => {
+    if (lifeLostAt === 0) return [];
+    return Array.from({ length: 12 }).map((_, i) => {
+      const angle = (i / 12) * Math.PI * 2;
+      const dist = 40 + Math.random() * 60;
+      return { id: `p-${lifeLostAt}-${i}`, px: Math.cos(angle) * dist, py: Math.sin(angle) * dist };
+    });
+  }, [lifeLostAt]);
 
   if (showLeaderboard) {
     return <Leaderboard onClose={() => setShowLeaderboard(false)} />;
@@ -79,20 +84,6 @@ export function GameArena() {
       />
     );
   }
-
-  // Generate particles on life loss
-  const particles = useMemo(() => {
-    if (lifeLostAt === 0) return [];
-    return Array.from({ length: 12 }).map((_, i) => {
-      const angle = (i / 12) * Math.PI * 2;
-      const dist = 40 + Math.random() * 60;
-      return {
-        id: `p-${lifeLostAt}-${i}`,
-        px: Math.cos(angle) * dist,
-        py: Math.sin(angle) * dist,
-      };
-    });
-  }, [lifeLostAt]);
 
   return (
     <div className={`relative w-full h-screen bg-gradient-to-b from-game-sky-top to-game-sky-bottom overflow-hidden ${shaking ? 'animate-shake' : ''}`}>
