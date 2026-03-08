@@ -118,8 +118,9 @@ export function useGameEngine() {
             type: 'bad'
           }]);
 
+          setLifeLostAt(Date.now());
           if (newLives <= 0) {
-            setTimeout(() => { playGameOver(); hapticGameOver(); }, 300);
+            setTimeout(() => { playGameOver(); hapticGameOver(); stopBackgroundMusic(); }, 300);
             return { ...gs, lives: 0, combo: 0, status: 'gameover' };
           }
           return { ...gs, lives: newLives, combo: 0 };
