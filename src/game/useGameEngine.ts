@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Balloon, GameState, BALLOON_COLORS, Difficulty, DIFFICULTY_CONFIGS } from './types';
 import { generateEquation } from './mathGenerator';
-import { playPopCorrect, playPopWrong, playCombo, playGameOver, hapticPop, hapticWrong, hapticGameOver } from './audioManager';
+import { playPopCorrect, playPopWrong, playCombo, playGameOver, hapticPop, hapticWrong, hapticGameOver, startBackgroundMusic, stopBackgroundMusic } from './audioManager';
 
 const getInitialState = (difficulty: Difficulty = 'medium'): GameState => ({
   status: 'menu',
