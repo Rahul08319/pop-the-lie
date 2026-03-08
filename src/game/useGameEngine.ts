@@ -144,8 +144,9 @@ export function useGameEngine() {
           setGameState(gs => {
             if (gs.status !== 'playing') return gs;
             const newLives = gs.lives - escaped.length;
+            setLifeLostAt(Date.now());
             if (newLives <= 0) {
-              setTimeout(() => { playGameOver(); hapticGameOver(); }, 300);
+              setTimeout(() => { playGameOver(); hapticGameOver(); stopBackgroundMusic(); }, 300);
               return { ...gs, lives: 0, status: 'gameover', missedLies: gs.missedLies + escaped.length };
             }
             return { ...gs, lives: newLives, combo: 0, missedLies: gs.missedLies + escaped.length };
