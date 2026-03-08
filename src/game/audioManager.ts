@@ -80,3 +80,89 @@ export function hapticGameOver() {
     navigator.vibrate([100, 50, 100, 50, 200]);
   }
 }
+
+// ─── Background Music ───
+let musicGain: GainNode | null = null;
+let musicPlaying = false;
+let musicOscillators: OscillatorNode[] = [];
+let musicInterval: number | null = null;
+let musicMuted = localStorage.getItem('popTheLie_musicMuted') === 'true';
+
+const MELODY_NOTES = [
+  [392, 523], [440, 554], [494, 587], [523, 659],
+  [494, 587], [440, 554], [392, 523], [349, 494],
+  [330, 440], [349, 494], [392, 523], [440, 554],
+  [494, 587], [523, 659], [587, 698], [523, 659],
+];
+
+export function startBackgroundMusic() {
+  if (musicPlaying) return;
+  musicPlaying = true;
+
+  try {
+    const ctx = getAudioContext();
+    musicGain = ctx.createGain();
+    musicGain.gain.setValueAtTime(musicMuted ? 0 : 0.06, ctx.currentTime);
+    musicGain.connect(ctx.destination);
+
+    let noteIndex = 0;
+    const playNote = () => {
+      if (!musicPlaying || !musicGain) return;
+      const ctx2 = getAudioContext();
+      const [f1, f2] = MELODY_NOTES[noteIndex % MELODY_NOTES.length];
+
+      const osc1 = ctx2.createOscillator();
+      const osc2 = ctx2.createOscillator();
+      const noteGain = ctx2.createGain();
+
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(f1, ctx2.currentTime);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(f2, ctx2.currentTime);
+
+      noteGain.gain.setValueAtTime(0.5, ctx2.currentTime);
+      noteGain.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.45);
+
+      osc1.connect(noteGain);
+      osc2.connect(noteGain);
+      noteGain.connect(musicGain!);
+
+      osc1.start();
+      osc2.start();
+      osc1.stop(ctx2.currentTime + 0.5);
+      osc2.stop(ctx2.currentTime + 0.5);
+
+      noteIndex++;
+    };
+
+    playNote();
+    musicInterval = window.setInterval(playNote, 500);
+  } catch {
+    // Audio not available
+  }
+}
+
+export function stopBackgroundMusic() {
+  musicPlaying = false;
+  if (musicInterval) {
+    clearInterval(musicInterval);
+    musicInterval = null;
+  }
+  musicOscillators.forEach(o => { try { o.stop(); } catch {} });
+  musicOscillators = [];
+  musicGain = null;
+}
+
+export function toggleMusicMute(): boolean {
+  musicMuted = !musicMuted;
+  localStorage.setItem('popTheLie_musicMuted', String(musicMuted));
+  if (musicGain) {
+    const ctx = getAudioContext();
+    musicGain.gain.setValueAtTime(musicMuted ? 0 : 0.06, ctx.currentTime);
+  }
+  return musicMuted;
+}
+
+export function isMusicMuted(): boolean {
+  return musicMuted;
+}

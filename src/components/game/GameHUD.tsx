@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { GameState, DIFFICULTY_CONFIGS } from '@/game/types';
 import { playButtonClick } from '@/game/audioManager';
+import { toggleMusicMute, isMusicMuted } from '@/game/audioManager';
 
 interface GameHUDProps {
   gameState: GameState;
@@ -8,6 +10,12 @@ interface GameHUDProps {
 
 export function GameHUD({ gameState, onPause }: GameHUDProps) {
   const config = DIFFICULTY_CONFIGS[gameState.difficulty];
+  const [muted, setMuted] = useState(isMusicMuted());
+
+  const handleMuteToggle = () => {
+    const newMuted = toggleMusicMute();
+    setMuted(newMuted);
+  };
 
   return (
     <div className="absolute top-0 left-0 right-0 z-30 p-3 flex items-start justify-between">
@@ -30,7 +38,7 @@ export function GameHUD({ gameState, onPause }: GameHUDProps) {
         )}
       </div>
 
-      {/* Lives + Pause */}
+      {/* Lives + Mute + Pause */}
       <div className="flex items-start gap-2">
         <div className="bg-card/80 backdrop-blur-sm rounded-xl px-4 py-2 border border-border pointer-events-none">
           <div className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
@@ -42,6 +50,13 @@ export function GameHUD({ gameState, onPause }: GameHUDProps) {
             ))}
           </div>
         </div>
+        <button
+          onClick={handleMuteToggle}
+          className="bg-card/80 backdrop-blur-sm rounded-xl px-3 py-2 border border-border hover:bg-card active:scale-95 transition-all"
+          aria-label={muted ? 'Unmute music' : 'Mute music'}
+        >
+          <span className="text-xl">{muted ? '🔇' : '🔊'}</span>
+        </button>
         <button
           onClick={() => { playButtonClick(); onPause(); }}
           className="bg-card/80 backdrop-blur-sm rounded-xl px-3 py-2 border border-border hover:bg-card active:scale-95 transition-all"

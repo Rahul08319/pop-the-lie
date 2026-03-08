@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { Balloon, GameState, BALLOON_COLORS, Difficulty, DIFFICULTY_CONFIGS } from './types';
 import { generateEquation } from './mathGenerator';
-import { playPopCorrect, playPopWrong, playCombo, playGameOver, hapticPop, hapticWrong, hapticGameOver } from './audioManager';
+import { playPopCorrect, playPopWrong, playCombo, playGameOver, hapticPop, hapticWrong, hapticGameOver, startBackgroundMusic, stopBackgroundMusic } from './audioManager';
 
 const getInitialState = (difficulty: Difficulty = 'medium'): GameState => ({
   status: 'menu',
@@ -36,12 +36,15 @@ export function useGameEngine() {
     setBalloons(prev => [...prev, balloon]);
   }, []);
 
+  const [lifeLostAt, setLifeLostAt] = useState<number>(0);
+
   const startGame = useCallback((difficulty: Difficulty = 'medium') => {
     balloonIdCounter = 0;
     setBalloons([]);
     setFloatingScores([]);
     const initial = getInitialState(difficulty);
     setGameState({ ...initial, status: 'playing', highScore: initial.highScore });
+    startBackgroundMusic();
   }, []);
 
   const pauseGame = useCallback(() => {
@@ -55,6 +58,7 @@ export function useGameEngine() {
   const quitToMenu = useCallback(() => {
     setBalloons([]);
     setFloatingScores([]);
+    stopBackgroundMusic();
     setGameState(gs => ({ ...getInitialState(gs.difficulty), highScore: gs.highScore }));
   }, []);
 
@@ -115,8 +119,9 @@ export function useGameEngine() {
             type: 'bad'
           }]);
 
+          setLifeLostAt(Date.now());
           if (newLives <= 0) {
-            setTimeout(() => { playGameOver(); hapticGameOver(); }, 300);
+            setTimeout(() => { playGameOver(); hapticGameOver(); stopBackgroundMusic(); }, 300);
             return { ...gs, lives: 0, combo: 0, status: 'gameover' };
           }
           return { ...gs, lives: newLives, combo: 0 };
@@ -140,8 +145,9 @@ export function useGameEngine() {
           setGameState(gs => {
             if (gs.status !== 'playing') return gs;
             const newLives = gs.lives - escaped.length;
+            setLifeLostAt(Date.now());
             if (newLives <= 0) {
-              setTimeout(() => { playGameOver(); hapticGameOver(); }, 300);
+              setTimeout(() => { playGameOver(); hapticGameOver(); stopBackgroundMusic(); }, 300);
               return { ...gs, lives: 0, status: 'gameover', missedLies: gs.missedLies + escaped.length };
             }
             return { ...gs, lives: newLives, combo: 0, missedLies: gs.missedLies + escaped.length };
@@ -187,5 +193,5 @@ export function useGameEngine() {
     return () => clearInterval(interval);
   }, []);
 
-  return { gameState, balloons, floatingScores, startGame, popBalloon, pauseGame, resumeGame, quitToMenu };
+  return { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu };
 }
