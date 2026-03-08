@@ -6,11 +6,14 @@ import { playButtonClick } from '@/game/audioManager';
 interface GameOverProps {
   gameState: GameState;
   onRestart: (difficulty: Difficulty) => void;
+  onShowLeaderboard: () => void;
+  onSaveScore: () => void;
 }
 
-export function GameOverScreen({ gameState, onRestart }: GameOverProps) {
+export function GameOverScreen({ gameState, onRestart, onShowLeaderboard, onSaveScore }: GameOverProps) {
   const isNewHighScore = gameState.score >= gameState.highScore && gameState.score > 0;
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(gameState.difficulty);
+  const [scoreSaved, setScoreSaved] = useState(false);
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
 
   const difficultyColors: Record<Difficulty, string> = {
@@ -58,6 +61,24 @@ export function GameOverScreen({ gameState, onRestart }: GameOverProps) {
               <span className="font-game-title text-lg">{DIFFICULTY_CONFIGS[gameState.difficulty].emoji} {DIFFICULTY_CONFIGS[gameState.difficulty].label}</span>
             </div>
           </div>
+        </div>
+
+        {/* Save & Leaderboard buttons */}
+        <div className="flex gap-2">
+          {!scoreSaved && gameState.score > 0 && (
+            <button
+              onClick={() => { playButtonClick(); setScoreSaved(true); onSaveScore(); }}
+              className="font-game-title text-xs bg-game-combo/20 border border-game-combo/40 px-4 py-2 rounded-full text-game-combo hover:scale-105 active:scale-95 transition-transform"
+            >
+              💾 Save Score
+            </button>
+          )}
+          <button
+            onClick={() => { playButtonClick(); onShowLeaderboard(); }}
+            className="font-game-title text-xs bg-primary/20 border border-primary/40 px-4 py-2 rounded-full text-primary hover:scale-105 active:scale-95 transition-transform"
+          >
+            🏆 Leaderboard
+          </button>
         </div>
 
         {/* Quick difficulty change */}

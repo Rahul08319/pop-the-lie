@@ -44,6 +44,20 @@ export function useGameEngine() {
     setGameState({ ...initial, status: 'playing', highScore: initial.highScore });
   }, []);
 
+  const pauseGame = useCallback(() => {
+    setGameState(gs => gs.status === 'playing' ? { ...gs, status: 'paused' } : gs);
+  }, []);
+
+  const resumeGame = useCallback(() => {
+    setGameState(gs => gs.status === 'paused' ? { ...gs, status: 'playing' } : gs);
+  }, []);
+
+  const quitToMenu = useCallback(() => {
+    setBalloons([]);
+    setFloatingScores([]);
+    setGameState(gs => ({ ...getInitialState(gs.difficulty), highScore: gs.highScore }));
+  }, []);
+
   const popBalloon = useCallback((id: string, clientX: number, clientY: number) => {
     setBalloons(prev => {
       const balloon = prev.find(b => b.id === id);
@@ -66,7 +80,6 @@ export function useGameEngine() {
             localStorage.setItem('popTheLie_highScore', String(newHighScore));
           }
 
-          // Sound & haptic
           playPopCorrect();
           hapticPop();
           if (newCombo >= 3) playCombo();
@@ -174,5 +187,5 @@ export function useGameEngine() {
     return () => clearInterval(interval);
   }, []);
 
-  return { gameState, balloons, floatingScores, startGame, popBalloon };
+  return { gameState, balloons, floatingScores, startGame, popBalloon, pauseGame, resumeGame, quitToMenu };
 }

@@ -6,9 +6,10 @@ import { playButtonClick } from '@/game/audioManager';
 interface MainMenuProps {
   highScore: number;
   onStart: (difficulty: Difficulty) => void;
+  onShowLeaderboard: () => void;
 }
 
-export function MainMenu({ highScore, onStart }: MainMenuProps) {
+export function MainMenu({ highScore, onStart, onShowLeaderboard }: MainMenuProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium');
 
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
@@ -91,12 +92,21 @@ export function MainMenu({ highScore, onStart }: MainMenuProps) {
           </div>
         </div>
 
-        {highScore > 0 && (
-          <div className="text-center">
-            <span className="text-muted-foreground text-xs">Best Score</span>
-            <div className="font-game-title text-2xl text-game-score">{highScore}</div>
-          </div>
-        )}
+        {/* High score & Leaderboard */}
+        <div className="flex items-center gap-4">
+          {highScore > 0 && (
+            <div className="text-center">
+              <span className="text-muted-foreground text-xs">Best Score</span>
+              <div className="font-game-title text-2xl text-game-score">{highScore}</div>
+            </div>
+          )}
+          <button
+            onClick={() => { playButtonClick(); onShowLeaderboard(); }}
+            className="font-game-title text-xs bg-primary/20 border border-primary/40 px-4 py-2 rounded-full text-primary hover:scale-105 active:scale-95 transition-transform"
+          >
+            🏆 Leaderboard
+          </button>
+        </div>
 
         {/* Play button */}
         <button
