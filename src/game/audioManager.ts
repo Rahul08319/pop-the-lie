@@ -62,6 +62,14 @@ export function playButtonClick() {
   playTone(500, 0.05, 'sine', 0.15);
 }
 
+export function playPowerUp() {
+  // Magical power-up shimmer
+  playTone(700, 0.08, 'triangle', 0.2);
+  setTimeout(() => playTone(900, 0.08, 'triangle', 0.2), 60);
+  setTimeout(() => playTone(1200, 0.12, 'triangle', 0.22), 120);
+  setTimeout(() => playTone(1600, 0.18, 'sine', 0.18), 200);
+}
+
 // Haptic feedback
 export function hapticPop() {
   if ('vibrate' in navigator) {
