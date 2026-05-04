@@ -14,7 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_challenge_scores: {
+        Row: {
+          best_combo: number
+          challenge_seed: string
+          created_at: string
+          id: string
+          level: number
+          player_name: string
+          score: number
+        }
+        Insert: {
+          best_combo?: number
+          challenge_seed: string
+          created_at?: string
+          id?: string
+          level?: number
+          player_name: string
+          score: number
+        }
+        Update: {
+          best_combo?: number
+          challenge_seed?: string
+          created_at?: string
+          id?: string
+          level?: number
+          player_name?: string
+          score?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
