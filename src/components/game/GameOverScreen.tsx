@@ -80,6 +80,12 @@ export function GameOverScreen({ gameState, onRestart, onShowLeaderboard, onShow
           >
             🏆 Leaderboard
           </button>
+          <button
+            onClick={() => { playButtonClick(); onShowDailyLeaderboard(); }}
+            className="font-game-title text-xs bg-game-score/20 border border-game-score/40 px-4 py-2 rounded-full text-game-score hover:scale-105 active:scale-95 transition-transform"
+          >
+            🌍 Daily
+          </button>
         </div>
 
         {/* Quick difficulty change */}
