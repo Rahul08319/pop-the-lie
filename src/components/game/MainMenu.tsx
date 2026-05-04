@@ -6,10 +6,12 @@ import { playButtonClick } from '@/game/audioManager';
 interface MainMenuProps {
   highScore: number;
   onStart: (difficulty: Difficulty) => void;
+  onStartDaily: (difficulty: Difficulty) => void;
   onShowLeaderboard: () => void;
+  onShowDailyLeaderboard: () => void;
 }
 
-export function MainMenu({ highScore, onStart, onShowLeaderboard }: MainMenuProps) {
+export function MainMenu({ highScore, onStart, onStartDaily, onShowLeaderboard, onShowDailyLeaderboard }: MainMenuProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium');
 
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
