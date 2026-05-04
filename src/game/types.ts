@@ -69,6 +69,11 @@ export const DIFFICULTY_CONFIGS: Record<Difficulty, DifficultyConfig> = {
   },
 };
 
+export interface ActivePowerUps {
+  freezeUntil: number;     // timestamp ms; spawner & motion paused while now < this
+  doubleUntil: number;     // timestamp ms; score x2 while now < this
+}
+
 export interface GameState {
   status: 'menu' | 'playing' | 'paused' | 'gameover';
   score: number;
@@ -80,6 +85,10 @@ export interface GameState {
   balloonsPopped: number;
   missedLies: number;
   difficulty: Difficulty;
+  mode: GameMode;
+  dailySeed: string;
+  powerUps: ActivePowerUps;
+  startingLives: number;
 }
 
 export const BALLOON_COLORS = [
