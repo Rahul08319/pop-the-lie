@@ -3,6 +3,8 @@ export interface MathEquation {
   isCorrect: boolean;
 }
 
+export type PowerUpType = 'freeze' | 'life' | 'double';
+
 export interface Balloon {
   id: string;
   equation: MathEquation;
@@ -12,7 +14,10 @@ export interface Balloon {
   popped: boolean;
   popResult?: 'correct' | 'wrong';
   createdAt: number;
+  powerUp?: PowerUpType;
 }
+
+export type GameMode = 'classic' | 'daily';
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
