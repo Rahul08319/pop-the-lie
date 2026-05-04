@@ -7,10 +7,11 @@ interface GameOverProps {
   gameState: GameState;
   onRestart: (difficulty: Difficulty) => void;
   onShowLeaderboard: () => void;
+  onShowDailyLeaderboard: () => void;
   onSaveScore: () => void;
 }
 
-export function GameOverScreen({ gameState, onRestart, onShowLeaderboard, onSaveScore }: GameOverProps) {
+export function GameOverScreen({ gameState, onRestart, onShowLeaderboard, onShowDailyLeaderboard, onSaveScore }: GameOverProps) {
   const isNewHighScore = gameState.score >= gameState.highScore && gameState.score > 0;
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(gameState.difficulty);
   const [scoreSaved, setScoreSaved] = useState(false);
@@ -78,6 +79,12 @@ export function GameOverScreen({ gameState, onRestart, onShowLeaderboard, onSave
             className="font-game-title text-xs bg-primary/20 border border-primary/40 px-4 py-2 rounded-full text-primary hover:scale-105 active:scale-95 transition-transform"
           >
             🏆 Leaderboard
+          </button>
+          <button
+            onClick={() => { playButtonClick(); onShowDailyLeaderboard(); }}
+            className="font-game-title text-xs bg-game-score/20 border border-game-score/40 px-4 py-2 rounded-full text-game-score hover:scale-105 active:scale-95 transition-transform"
+          >
+            🌍 Daily
           </button>
         </div>
 

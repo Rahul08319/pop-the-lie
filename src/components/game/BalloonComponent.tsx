@@ -58,6 +58,8 @@ export function BalloonComponent({ balloon, onPop }: BalloonProps) {
   const gradient = COLOR_MAP[balloon.color] || COLOR_MAP['balloon-blue'];
   const shine = SHINE_MAP[balloon.color] || SHINE_MAP['balloon-blue'];
 
+  const powerIcon = balloon.powerUp === 'freeze' ? '❄️' : balloon.powerUp === 'life' ? '❤️' : balloon.powerUp === 'double' ? '✨' : null;
+
   return (
     <div
       className="absolute animate-float-up cursor-pointer"
@@ -71,8 +73,12 @@ export function BalloonComponent({ balloon, onPop }: BalloonProps) {
       <div className="animate-sway">
         {/* String */}
         <div className="w-0.5 h-8 bg-foreground/30 mx-auto" />
+        {/* Power-up aura */}
+        {powerIcon && (
+          <div className="absolute inset-0 -m-2 rounded-full bg-game-score/30 blur-md animate-pulse pointer-events-none" />
+        )}
         {/* Balloon body */}
-        <div className={`relative w-20 h-24 rounded-full bg-gradient-to-b ${gradient} shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95`}>
+        <div className={`relative w-20 h-24 rounded-full bg-gradient-to-b ${gradient} shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95 ${powerIcon ? 'ring-2 ring-game-score/70' : ''}`}>
           {/* Shine effect */}
           <div className={`absolute top-2 left-3 w-4 h-6 rounded-full ${shine} rotate-[-20deg]`} />
           {/* Knot */}
@@ -81,6 +87,9 @@ export function BalloonComponent({ balloon, onPop }: BalloonProps) {
           <span className="text-foreground font-bold text-xs text-center leading-tight px-1 drop-shadow-md select-none">
             {balloon.equation.display}
           </span>
+          {powerIcon && (
+            <span className="absolute -top-3 -right-2 text-xl drop-shadow-lg select-none animate-bounce">{powerIcon}</span>
+          )}
         </div>
       </div>
     </div>
