@@ -108,18 +108,29 @@ export function MainMenu({ highScore, onStart, onStartDaily, onShowLeaderboard, 
           >
             🏆 Leaderboard
           </button>
+          <button
+            onClick={() => { playButtonClick(); onShowDailyLeaderboard(); }}
+            className="font-game-title text-xs bg-game-score/20 border border-game-score/40 px-4 py-2 rounded-full text-game-score hover:scale-105 active:scale-95 transition-transform"
+          >
+            🌍 Daily
+          </button>
         </div>
 
-        {/* Play button */}
-        <button
-          onClick={() => {
-            playButtonClick();
-            onStart(selectedDifficulty);
-          }}
-          className="font-game-title text-2xl bg-gradient-to-r from-primary to-game-score px-12 py-4 rounded-full text-primary-foreground shadow-xl hover:scale-105 active:scale-95 transition-transform animate-pulse-glow"
-        >
-          🎮 PLAY
-        </button>
+        {/* Play buttons */}
+        <div className="flex flex-col items-center gap-2 w-full">
+          <button
+            onClick={() => { playButtonClick(); onStart(selectedDifficulty); }}
+            className="font-game-title text-2xl bg-gradient-to-r from-primary to-game-score px-12 py-4 rounded-full text-primary-foreground shadow-xl hover:scale-105 active:scale-95 transition-transform animate-pulse-glow"
+          >
+            🎮 PLAY
+          </button>
+          <button
+            onClick={() => { playButtonClick(); onStartDaily(selectedDifficulty); }}
+            className="font-game-title text-sm bg-gradient-to-r from-game-score/80 to-accent/80 px-8 py-2.5 rounded-full text-primary-foreground shadow-md hover:scale-105 active:scale-95 transition-transform"
+          >
+            🌍 Daily Challenge
+          </button>
+        </div>
       </div>
 
       {/* Decorative floating balloons */}
