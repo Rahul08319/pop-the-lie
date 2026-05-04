@@ -7,10 +7,11 @@ interface GameOverProps {
   gameState: GameState;
   onRestart: (difficulty: Difficulty) => void;
   onShowLeaderboard: () => void;
+  onShowDailyLeaderboard: () => void;
   onSaveScore: () => void;
 }
 
-export function GameOverScreen({ gameState, onRestart, onShowLeaderboard, onSaveScore }: GameOverProps) {
+export function GameOverScreen({ gameState, onRestart, onShowLeaderboard, onShowDailyLeaderboard, onSaveScore }: GameOverProps) {
   const isNewHighScore = gameState.score >= gameState.highScore && gameState.score > 0;
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(gameState.difficulty);
   const [scoreSaved, setScoreSaved] = useState(false);
