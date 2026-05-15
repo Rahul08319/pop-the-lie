@@ -13,6 +13,7 @@ import { NameInputDialog } from './NameInputDialog';
 import { DailyLeaderboard } from './DailyLeaderboard';
 import { addToLeaderboard } from './Leaderboard';
 import { submitDailyScore, hasSubmittedToday } from '@/game/dailyChallenge';
+import { toast } from '@/hooks/use-toast';
 
 export function GameArena() {
   const { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu } = useGameEngine();
@@ -79,10 +80,21 @@ export function GameArena() {
                   bestCombo: gameState.bestCombo,
                   difficulty: gameState.difficulty,
                 });
-              } catch (e) {
+                toast({ title: '🌍 Submitted!', description: 'Your daily score is on the global board.' });
+              } catch (e: any) {
                 console.error('Daily submit failed', e);
+                toast({
+                  title: 'Could not submit score',
+                  description: e?.message ?? 'Please try again later.',
+                  variant: 'destructive',
+                });
               }
               setSubmittingDaily(false);
+            } else if (isDaily) {
+              toast({
+                title: 'Already submitted today',
+                description: 'One Daily Challenge submission per device.',
+              });
             }
             addToLeaderboard({
               name,
