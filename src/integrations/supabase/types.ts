@@ -19,6 +19,7 @@ export type Database = {
           best_combo: number
           challenge_seed: string
           created_at: string
+          device_id: string | null
           id: string
           level: number
           player_name: string
@@ -28,6 +29,7 @@ export type Database = {
           best_combo?: number
           challenge_seed: string
           created_at?: string
+          device_id?: string | null
           id?: string
           level?: number
           player_name: string
@@ -37,6 +39,7 @@ export type Database = {
           best_combo?: number
           challenge_seed?: string
           created_at?: string
+          device_id?: string | null
           id?: string
           level?: number
           player_name?: string
