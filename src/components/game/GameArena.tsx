@@ -13,6 +13,7 @@ import { NameInputDialog } from './NameInputDialog';
 import { DailyLeaderboard } from './DailyLeaderboard';
 import { addToLeaderboard } from './Leaderboard';
 import { submitDailyScore, hasSubmittedToday } from '@/game/dailyChallenge';
+import { toast } from '@/hooks/use-toast';
 
 export function GameArena() {
   const { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu } = useGameEngine();
@@ -79,10 +80,21 @@ export function GameArena() {
                   bestCombo: gameState.bestCombo,
                   difficulty: gameState.difficulty,
                 });
-              } catch (e) {
+                toast({ title: '🌍 Submitted!', description: 'Your daily score is on the global board.' });
+              } catch (e: any) {
                 console.error('Daily submit failed', e);
+                toast({
+                  title: 'Could not submit score',
+                  description: e?.message ?? 'Please try again later.',
+                  variant: 'destructive',
+                });
               }
               setSubmittingDaily(false);
+            } else if (isDaily) {
+              toast({
+                title: 'Already submitted today',
+                description: 'One Daily Challenge submission per device.',
+              });
             }
             addToLeaderboard({
               name,
@@ -128,10 +140,10 @@ export function GameArena() {
             <span className="font-game-title text-[10px] bg-game-score/30 border border-game-score/50 px-2 py-1 rounded-full text-game-score">🌍 DAILY</span>
           )}
           {freezeActive && (
-            <span className="font-game-title text-[10px] bg-primary/40 border border-primary/60 px-2 py-1 rounded-full text-primary-foreground animate-pulse">❄️ FROZEN</span>
+            <span title="Freeze — balloons paused for 3s" className="font-game-title text-[10px] bg-primary/40 border border-primary/60 px-2 py-1 rounded-full text-primary-foreground animate-pulse">❄️ FROZEN</span>
           )}
           {doubleActive && (
-            <span className="font-game-title text-[10px] bg-game-score/40 border border-game-score/60 px-2 py-1 rounded-full text-primary-foreground animate-pulse">✨ x2</span>
+            <span title="Double Points — 2× score for 8s" className="font-game-title text-[10px] bg-game-score/40 border border-game-score/60 px-2 py-1 rounded-full text-primary-foreground animate-pulse">✨ x2</span>
           )}
         </div>
       )}
