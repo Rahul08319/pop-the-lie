@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { StarField } from './StarField';
 import { Difficulty, DIFFICULTY_CONFIGS } from '@/game/types';
 import { playButtonClick } from '@/game/audioManager';
+import { PowerUpsLegend } from './PowerUpsLegend';
 
 interface MainMenuProps {
   highScore: number;
@@ -55,6 +56,9 @@ export function MainMenu({ highScore, onStart, onStartDaily, onShowLeaderboard, 
             </li>
           </ul>
         </div>
+
+        {/* Power-ups legend */}
+        <PowerUpsLegend compact />
 
         {/* Difficulty Selection */}
         <div className="w-full">

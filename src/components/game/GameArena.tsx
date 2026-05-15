@@ -128,10 +128,10 @@ export function GameArena() {
             <span className="font-game-title text-[10px] bg-game-score/30 border border-game-score/50 px-2 py-1 rounded-full text-game-score">🌍 DAILY</span>
           )}
           {freezeActive && (
-            <span className="font-game-title text-[10px] bg-primary/40 border border-primary/60 px-2 py-1 rounded-full text-primary-foreground animate-pulse">❄️ FROZEN</span>
+            <span title="Freeze — balloons paused for 3s" className="font-game-title text-[10px] bg-primary/40 border border-primary/60 px-2 py-1 rounded-full text-primary-foreground animate-pulse">❄️ FROZEN</span>
           )}
           {doubleActive && (
-            <span className="font-game-title text-[10px] bg-game-score/40 border border-game-score/60 px-2 py-1 rounded-full text-primary-foreground animate-pulse">✨ x2</span>
+            <span title="Double Points — 2× score for 8s" className="font-game-title text-[10px] bg-game-score/40 border border-game-score/60 px-2 py-1 rounded-full text-primary-foreground animate-pulse">✨ x2</span>
           )}
         </div>
       )}
