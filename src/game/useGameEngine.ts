@@ -3,6 +3,7 @@ import { Balloon, GameState, BALLOON_COLORS, Difficulty, DIFFICULTY_CONFIGS, Gam
 import { generateEquation } from './mathGenerator';
 import { mulberry32, seedToInt, todaySeedString } from './rng';
 import { playPopCorrect, playPopWrong, playCombo, playGameOver, hapticPop, hapticWrong, hapticGameOver, startBackgroundMusic, stopBackgroundMusic, playPowerUp } from './audioManager';
+import { savePlayablesData, sendPlayablesScore } from './youtubePlayables';
 
 const POWERUP_SPAWN_CHANCE = 0.06; // ~6% of balloons carry a power-up
 const FREEZE_DURATION_MS = 3000;
@@ -75,6 +76,10 @@ export function useGameEngine() {
     }
   }, []);
 
+  const hydrateHighScore = useCallback((highScore: number) => {
+    setGameState(gs => ({ ...gs, highScore: Math.max(gs.highScore, highScore) }));
+  }, []);
+
   const startGame = useCallback((difficulty: Difficulty = 'medium', mode: GameMode = 'classic') => {
     balloonIdCounter = 0;
     setBalloons([]);
@@ -124,6 +129,8 @@ export function useGameEngine() {
       const isLie = !balloon.equation.isCorrect;
 
       setGameState(gs => {
+            void savePlayablesData({ version: 1, highScore: newHighScore });
+            void sendPlayablesScore(newHighScore);
         if (gs.status !== 'playing') return gs;
 
         if (isLie) {
@@ -262,5 +269,5 @@ export function useGameEngine() {
     return () => clearInterval(interval);
   }, []);
 
-  return { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu };
+  return { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu, hydrateHighScore };
 }

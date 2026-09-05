@@ -1,6 +1,11 @@
 // Web Audio API sound effects & haptic feedback manager
 
 let audioCtx: AudioContext | null = null;
+let systemAudioEnabled = true;
+export function setSystemAudioEnabled(enabled: boolean) {
+  systemAudioEnabled = enabled;
+}
+
 
 function getAudioContext(): AudioContext {
   if (!audioCtx) {
@@ -13,6 +18,7 @@ function getAudioContext(): AudioContext {
 }
 
 function playTone(frequency: number, duration: number, type: OscillatorType = 'sine', volume = 0.3) {
+  if (!systemAudioEnabled) return;
   try {
     const ctx = getAudioContext();
     const osc = ctx.createOscillator();

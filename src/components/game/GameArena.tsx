@@ -12,17 +12,25 @@ import { Leaderboard } from './Leaderboard';
 import { NameInputDialog } from './NameInputDialog';
 import { DailyLeaderboard } from './DailyLeaderboard';
 import { addToLeaderboard } from './Leaderboard';
+import { useYouTubePlayables } from '@/game/youtubePlayables';
 import { submitDailyScore, hasSubmittedToday } from '@/game/dailyChallenge';
 import { toast } from '@/hooks/use-toast';
 
 export function GameArena() {
-  const { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu } = useGameEngine();
+  const { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu, hydrateHighScore } = useGameEngine();
   const [showTutorial, setShowTutorial] = useState(true);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showDailyLeaderboard, setShowDailyLeaderboard] = useState(false);
   const [showNameInput, setShowNameInput] = useState(false);
   const [submittingDaily, setSubmittingDaily] = useState(false);
   const [shaking, setShaking] = useState(false);
+  useYouTubePlayables({
+    onLoaded: (save) => hydrateHighScore(save.highScore),
+    onPause: pauseGame,
+    onResume: resumeGame,
+    getSave: () => ({ version: 1, highScore: gameState.highScore }),
+  });
+
 
   useEffect(() => {
     if (lifeLostAt > 0) {
