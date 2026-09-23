@@ -2,26 +2,91 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Pop the Lie - Math Balloon Game</title>
-    <meta name="description" content="Pop balloons with wrong math equations! A fun and challenging math game." />
-    <meta name="author" content="Lovable" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Pop the Lie - Fast Math Reflex Arcade Game</title>
+    <meta name="description" content="Pop balloons with wrong math equations! A fast-paced, brain-sharpening reflex game optimized for YouTube Playables, Facebook Instant Games, Poki, CrazyGames, and modern browsers." />
+    <meta name="author" content="Rahul08319" />
+    <meta name="theme-color" content="#0066cc" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    <meta property="og:title" content="Lovable App" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <!-- Apple Web App & Fluid Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Pop the Lie" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+
+    <!-- Open Graph / Social -->
+    <meta property="og:title" content="Pop the Lie - Fast Math Balloon Game" />
+    <meta property="og:description" content="Test your math reflexes! Pop the false equations and protect the truth." />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="./placeholder.svg" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:title" content="Pop the Lie" />
+    <meta name="twitter:description" content="Pop balloons with wrong math equations! A sleek Apple-designed math reflex game." />
+
+    <!-- YouTube Playables SDK v1 - MUST be loaded before any game code -->
+    <script src="https://www.youtube.com/game_api/v1"></script>
+    <script>
+      // Safe local fallback stub for offline development and testing
+      if (typeof window.ytgame === 'undefined') {
+        window.ytgame = {
+          IN_PLAYABLES_ENV: false,
+          SDK_VERSION: '1.0.0-fallback',
+          game: {
+            firstFrameReady: function () {},
+            gameReady: function () {},
+            loadData: function () {
+              return Promise.resolve(localStorage.getItem('popTheLie_saveData') || '');
+            },
+            saveData: function (data) {
+              localStorage.setItem('popTheLie_saveData', data);
+              return Promise.resolve();
+            },
+          },
+          system: {
+            getLanguage: function () {
+              return Promise.resolve(navigator.language || 'en');
+            },
+            isAudioEnabled: function () {
+              return true;
+            },
+            onAudioEnabledChange: function () {
+              return function () {};
+            },
+            onPause: function () {
+              return function () {};
+            },
+            onResume: function () {
+              return function () {};
+            },
+          },
+          ads: {
+            requestInterstitialAd: function () {
+              return Promise.resolve();
+            },
+            requestRewardedAd: function () {
+              return Promise.resolve(true);
+            },
+          },
+          engagement: {
+            sendScore: function () {
+              return Promise.resolve();
+            },
+            openYTContent: function () {
+              return Promise.resolve();
+            },
+          },
+          health: {
+            logError: function () {},
+            logWarning: function () {},
+          },
+        };
+      }
+    </script>
   </head>
 
-  <body>
+  <body class="bg-[#0c1017] text-white overflow-hidden select-none">
     <div id="root"></div>
-    <!-- The Playables SDK must load before the game module. -->
-    <script src="https://www.youtube.com/game_api/v1"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

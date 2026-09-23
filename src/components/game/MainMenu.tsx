@@ -3,6 +3,8 @@ import { StarField } from './StarField';
 import { Difficulty, DIFFICULTY_CONFIGS } from '@/game/types';
 import { playButtonClick } from '@/game/audioManager';
 import { PowerUpsLegend } from './PowerUpsLegend';
+import { usePlatform } from '@/platforms/platformManager';
+import { PlatformSelectorModal } from './PlatformSelectorModal';
 
 interface MainMenuProps {
   highScore: number;
@@ -12,58 +14,94 @@ interface MainMenuProps {
   onShowDailyLeaderboard: () => void;
 }
 
-export function MainMenu({ highScore, onStart, onStartDaily, onShowLeaderboard, onShowDailyLeaderboard }: MainMenuProps) {
+export function MainMenu({
+  highScore,
+  onStart,
+  onStartDaily,
+  onShowLeaderboard,
+  onShowDailyLeaderboard,
+}: MainMenuProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('medium');
+  const [showPlatformModal, setShowPlatformModal] = useState(false);
+  const { platformName, platformId } = usePlatform();
 
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
 
-  const difficultyColors: Record<Difficulty, string> = {
-    easy: 'from-accent to-accent/70 border-accent/50',
-    medium: 'from-primary to-primary/70 border-primary/50',
-    hard: 'from-secondary to-secondary/70 border-secondary/50',
-  };
-
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-game-sky-top to-game-sky-bottom overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#0c1017] via-[#141a24] to-[#0a0e14] overflow-hidden px-4 py-8 select-none">
       <StarField />
 
-      <div className="relative z-10 flex flex-col items-center gap-6 px-6 max-w-md w-full">
-        {/* Title */}
-        <div className="text-center">
-          <h1 className="font-game-title text-5xl md:text-7xl text-primary drop-shadow-lg">
+      {showPlatformModal && (
+        <PlatformSelectorModal onClose={() => setShowPlatformModal(false)} />
+      )}
+
+      {/* Top Bar: Platform Selector Chip */}
+      <div className="absolute top-4 left-0 right-0 px-6 flex justify-between items-center z-20">
+        <button
+          onClick={() => { playButtonClick(); setShowPlatformModal(true); }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md text-white text-xs transition-all active:scale-[0.96]"
+          title="Switch platform simulated SDK"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="font-medium text-white/90">{platformName}</span>
+          <span className="text-[10px] text-white/50">▾</span>
+        </button>
+
+        {highScore > 0 && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 backdrop-blur-md text-xs text-white">
+            <span className="text-white/60">Best</span>
+            <span className="font-bold text-[#f5c518]">{highScore}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center gap-5 max-w-sm w-full mt-8 animate-spring-in">
+        {/* Apple Display Hero Title */}
+        <div className="text-center space-y-1">
+          <div className="inline-block px-3 py-1 rounded-full bg-[#0066cc]/20 border border-[#0066cc]/40 text-[#2997ff] text-[11px] font-semibold tracking-wide uppercase mb-1">
+            Fast Math Reflex
+          </div>
+          <h1 className="font-apple-display text-4xl sm:text-5xl font-extrabold text-white tracking-tight drop-shadow-md">
             Pop the Lie
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground font-semibold">
-            🎈 Pop the wrong math • Leave the truth! 🎈
+          <p className="text-sm text-white/70 font-normal">
+            Pop the wrong math • Keep the truth alive
           </p>
         </div>
 
-        {/* How to play */}
-        <div className="bg-card/60 backdrop-blur-md rounded-2xl p-4 w-full border border-border">
-          <h2 className="font-game-title text-lg text-primary mb-2 text-center">How to Play</h2>
-          <ul className="space-y-1.5 text-xs text-foreground/80">
-            <li className="flex items-start gap-2">
-              <span className="text-game-correct-glow">✓</span>
-              <span>Tap balloons with <strong className="text-secondary">wrong</strong> equations</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-game-wrong-glow">✗</span>
-              <span>Don't pop <strong className="text-accent">correct</strong> ones!</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-game-combo">🔥</span>
-              <span>Build combos for bonus points</span>
-            </li>
-          </ul>
+        {/* How to Play - Apple Frosted Card */}
+        <div className="apple-card p-4 w-full">
+          <h2 className="text-xs font-semibold text-white/90 uppercase tracking-wider mb-2.5 text-center">
+            How to Play
+          </h2>
+          <div className="grid grid-cols-3 gap-2 text-center text-xs text-white/80">
+            <div className="p-2 rounded-xl bg-white/5 border border-white/5 flex flex-col items-center">
+              <span className="text-lg mb-1">🎈❌</span>
+              <span className="font-medium text-[11px] leading-tight">Pop Wrong Equations</span>
+            </div>
+            <div className="p-2 rounded-xl bg-white/5 border border-white/5 flex flex-col items-center">
+              <span className="text-lg mb-1">🛡️✓</span>
+              <span className="font-medium text-[11px] leading-tight">Spare Correct Ones</span>
+            </div>
+            <div className="p-2 rounded-xl bg-white/5 border border-white/5 flex flex-col items-center">
+              <span className="text-lg mb-1">🔥✨</span>
+              <span className="font-medium text-[11px] leading-tight">Chain High Combos</span>
+            </div>
+          </div>
         </div>
 
         {/* Power-ups legend */}
         <PowerUpsLegend compact />
 
-        {/* Difficulty Selection */}
-        <div className="w-full">
-          <h3 className="font-game-title text-base text-foreground text-center mb-3">Choose Difficulty</h3>
-          <div className="grid grid-cols-3 gap-2">
+        {/* Difficulty Selection: Apple-style Segmented Control */}
+        <div className="w-full space-y-1.5">
+          <div className="flex justify-between items-center px-1">
+            <span className="text-xs font-medium text-white/60">Difficulty</span>
+            <span className="text-[11px] text-white/50">
+              {DIFFICULTY_CONFIGS[selectedDifficulty].lives} Lives • {DIFFICULTY_CONFIGS[selectedDifficulty].description}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 p-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
             {difficulties.map((diff) => {
               const config = DIFFICULTY_CONFIGS[diff];
               const isSelected = selectedDifficulty === diff;
@@ -74,72 +112,52 @@ export function MainMenu({ highScore, onStart, onStartDaily, onShowLeaderboard, 
                     setSelectedDifficulty(diff);
                     playButtonClick();
                   }}
-                  className={`
-                    relative rounded-xl p-3 border-2 transition-all duration-200
-                    ${isSelected
-                      ? `bg-gradient-to-b ${difficultyColors[diff]} scale-105 shadow-lg`
-                      : 'bg-card/40 border-border/50 hover:bg-card/60'
-                    }
-                  `}
+                  className={`py-2 px-3 rounded-full text-xs font-semibold transition-all duration-150 active:scale-[0.96] flex items-center justify-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-white text-black shadow-md'
+                      : 'text-white/80 hover:text-white'
+                  }`}
                 >
-                  <div className="text-2xl mb-1">{config.emoji}</div>
-                  <div className={`font-game-title text-sm ${isSelected ? 'text-primary-foreground' : 'text-foreground'}`}>
-                    {config.label}
-                  </div>
-                  <div className={`text-[10px] mt-1 ${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
-                    {config.description}
-                  </div>
-                  <div className={`text-[10px] mt-1 ${isSelected ? 'text-primary-foreground/70' : 'text-muted-foreground/70'}`}>
-                    ❤️ {config.lives} lives
-                  </div>
+                  <span>{config.emoji}</span>
+                  <span>{config.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* High score & Leaderboard */}
-        <div className="flex items-center gap-4">
-          {highScore > 0 && (
-            <div className="text-center">
-              <span className="text-muted-foreground text-xs">Best Score</span>
-              <div className="font-game-title text-2xl text-game-score">{highScore}</div>
-            </div>
-          )}
+        {/* Leaderboard & Daily buttons */}
+        <div className="flex items-center justify-center gap-2.5 w-full pt-1">
           <button
             onClick={() => { playButtonClick(); onShowLeaderboard(); }}
-            className="font-game-title text-xs bg-primary/20 border border-primary/40 px-4 py-2 rounded-full text-primary hover:scale-105 active:scale-95 transition-transform"
+            className="flex-1 apple-ghost-pill py-2 text-xs font-semibold text-center flex items-center justify-center gap-1"
           >
-            🏆 Leaderboard
+            <span>🏆</span> Leaderboard
           </button>
           <button
             onClick={() => { playButtonClick(); onShowDailyLeaderboard(); }}
-            className="font-game-title text-xs bg-game-score/20 border border-game-score/40 px-4 py-2 rounded-full text-game-score hover:scale-105 active:scale-95 transition-transform"
+            className="flex-1 apple-ghost-pill py-2 text-xs font-semibold text-center flex items-center justify-center gap-1"
           >
-            🌍 Daily
+            <span>🌍</span> Daily Board
           </button>
         </div>
 
-        {/* Play buttons */}
-        <div className="flex flex-col items-center gap-2 w-full">
+        {/* Play Action Buttons */}
+        <div className="flex flex-col gap-2.5 w-full pt-2">
           <button
             onClick={() => { playButtonClick(); onStart(selectedDifficulty); }}
-            className="font-game-title text-2xl bg-gradient-to-r from-primary to-game-score px-12 py-4 rounded-full text-primary-foreground shadow-xl hover:scale-105 active:scale-95 transition-transform animate-pulse-glow"
+            className="apple-pill-btn w-full py-4 text-base tracking-tight font-bold shadow-xl flex items-center justify-center gap-2"
           >
-            🎮 PLAY
+            <span>▶</span> Start Game
           </button>
           <button
             onClick={() => { playButtonClick(); onStartDaily(selectedDifficulty); }}
-            className="font-game-title text-sm bg-gradient-to-r from-game-score/80 to-accent/80 px-8 py-2.5 rounded-full text-primary-foreground shadow-md hover:scale-105 active:scale-95 transition-transform"
+            className="apple-ghost-pill w-full py-2.5 text-xs font-medium text-center hover:bg-white/15"
           >
-            🌍 Daily Challenge
+            Daily Challenge (Global Seed)
           </button>
         </div>
       </div>
-
-      {/* Decorative floating balloons */}
-      <div className="absolute bottom-10 left-10 w-12 h-16 rounded-full bg-gradient-to-b from-game-balloon-red to-destructive opacity-30 animate-sway" />
-      <div className="absolute bottom-20 right-16 w-10 h-14 rounded-full bg-gradient-to-b from-game-balloon-blue to-primary opacity-25 animate-sway" style={{ animationDelay: '1s' }} />
     </div>
   );
 }

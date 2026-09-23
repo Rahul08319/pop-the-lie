@@ -5,90 +5,143 @@ interface BalloonProps {
   onPop: (id: string, x: number, y: number) => void;
 }
 
-const COLOR_MAP: Record<string, string> = {
-  'balloon-red': 'from-game-balloon-red to-red-700',
-  'balloon-blue': 'from-game-balloon-blue to-blue-700',
-  'balloon-green': 'from-game-balloon-green to-green-700',
-  'balloon-yellow': 'from-game-balloon-yellow to-yellow-600',
-  'balloon-purple': 'from-game-balloon-purple to-purple-700',
-  'balloon-orange': 'from-game-balloon-orange to-orange-700',
-};
-
-const SHINE_MAP: Record<string, string> = {
-  'balloon-red': 'bg-red-300/40',
-  'balloon-blue': 'bg-blue-300/40',
-  'balloon-green': 'bg-green-300/40',
-  'balloon-yellow': 'bg-yellow-200/40',
-  'balloon-purple': 'bg-purple-300/40',
-  'balloon-orange': 'bg-orange-300/40',
+const COLOR_MAP: Record<string, { bg: string; glow: string; text: string }> = {
+  'balloon-red': {
+    bg: 'from-[#ff3b30] via-[#d70015] to-[#a3000b]',
+    glow: 'rgba(255, 59, 48, 0.5)',
+    text: '#ffffff',
+  },
+  'balloon-blue': {
+    bg: 'from-[#007aff] via-[#0066cc] to-[#004080]',
+    glow: 'rgba(0, 122, 255, 0.5)',
+    text: '#ffffff',
+  },
+  'balloon-green': {
+    bg: 'from-[#34c759] via-[#248a3d] to-[#165a27]',
+    glow: 'rgba(52, 199, 89, 0.5)',
+    text: '#ffffff',
+  },
+  'balloon-yellow': {
+    bg: 'from-[#ffd60a] via-[#f5a623] to-[#d48200]',
+    glow: 'rgba(255, 214, 10, 0.5)',
+    text: '#1d1d1f',
+  },
+  'balloon-purple': {
+    bg: 'from-[#af52de] via-[#8944ab] to-[#5b2b73]',
+    glow: 'rgba(175, 82, 222, 0.5)',
+    text: '#ffffff',
+  },
+  'balloon-orange': {
+    bg: 'from-[#ff9500] via-[#e06d00] to-[#b34700]',
+    glow: 'rgba(255, 149, 0, 0.5)',
+    text: '#ffffff',
+  },
 };
 
 export function BalloonComponent({ balloon, onPop }: BalloonProps) {
-  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     onPop(balloon.id, rect.left + rect.width / 2, rect.top);
   };
 
+  const scheme = COLOR_MAP[balloon.color] || COLOR_MAP['balloon-blue'];
+
   if (balloon.popped) {
+    const isCorrect = balloon.popResult === 'correct';
     return (
       <div
-        className="absolute animate-pop pointer-events-none"
+        className="absolute pointer-events-none animate-pop"
         style={{ left: `${balloon.x}%`, bottom: 0 }}
       >
-        <div className={`w-16 h-20 rounded-full ${balloon.popResult === 'correct' ? 'bg-game-correct-glow/50' : 'bg-game-wrong-glow/50'}`} />
-        {/* Particle burst */}
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            key={i}
-            className={`absolute w-2 h-2 rounded-full ${balloon.popResult === 'correct' ? 'bg-game-correct-glow' : 'bg-game-wrong-glow'}`}
-            style={{
-              left: '50%',
-              top: '50%',
-              transform: `translate(-50%, -50%) translate(${Math.cos(i * 60 * Math.PI / 180) * 30}px, ${Math.sin(i * 60 * Math.PI / 180) * 30}px)`,
-              opacity: 0.8,
-            }}
-          />
-        ))}
+        {/* Core Flash */}
+        <div
+          className={`w-16 h-20 rounded-full blur-sm ${
+            isCorrect ? 'bg-emerald-400/80 shadow-[0_0_30px_rgba(52,199,89,0.8)]' : 'bg-red-500/80 shadow-[0_0_30px_rgba(255,59,48,0.8)]'
+          }`}
+        />
+        {/* Apple Particle Shower (10 radial particles) */}
+        {Array.from({ length: 10 }).map((_, i) => {
+          const angle = (i * 36 * Math.PI) / 180;
+          const dist = 35 + (i % 3) * 15;
+          return (
+            <div
+              key={i}
+              className={`absolute w-2.5 h-2.5 rounded-full ${
+                isCorrect ? 'bg-emerald-300' : 'bg-rose-400'
+              } shadow-sm`}
+              style={{
+                left: '50%',
+                top: '50%',
+                transform: `translate(-50%, -50%) translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)`,
+                opacity: 0.9,
+              }}
+            />
+          );
+        })}
       </div>
     );
   }
 
-  const gradient = COLOR_MAP[balloon.color] || COLOR_MAP['balloon-blue'];
-  const shine = SHINE_MAP[balloon.color] || SHINE_MAP['balloon-blue'];
-
-  const powerIcon = balloon.powerUp === 'freeze' ? '❄️' : balloon.powerUp === 'life' ? '❤️' : balloon.powerUp === 'double' ? '✨' : null;
+  const powerIcon =
+    balloon.powerUp === 'freeze'
+      ? '❄️'
+      : balloon.powerUp === 'life'
+      ? '❤️'
+      : balloon.powerUp === 'double'
+      ? '✨'
+      : null;
 
   return (
     <div
-      className="absolute animate-float-up cursor-pointer"
+      className="absolute animate-float-up cursor-pointer touch-none select-none"
       style={{
         left: `${balloon.x}%`,
         '--float-duration': `${balloon.speed}s`,
       } as React.CSSProperties}
-      onClick={handleClick}
-      onTouchStart={handleClick}
+      onPointerDown={handlePointerDown}
     >
       <div className="animate-sway">
-        {/* String */}
-        <div className="w-0.5 h-8 bg-foreground/30 mx-auto" />
-        {/* Power-up aura */}
+        {/* Physical Balloon String */}
+        <div className="w-[1.5px] h-9 bg-white/40 mx-auto" />
+
+        {/* Power-up Ambient Aura */}
         {powerIcon && (
-          <div className="absolute inset-0 -m-2 rounded-full bg-game-score/30 blur-md animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 -m-3 rounded-full bg-[#f5c518]/30 blur-lg animate-pulse pointer-events-none" />
         )}
-        {/* Balloon body */}
-        <div className={`relative w-20 h-24 rounded-full bg-gradient-to-b ${gradient} shadow-lg flex items-center justify-center transition-transform hover:scale-110 active:scale-95 ${powerIcon ? 'ring-2 ring-game-score/70' : ''}`}>
-          {/* Shine effect */}
-          <div className={`absolute top-2 left-3 w-4 h-6 rounded-full ${shine} rotate-[-20deg]`} />
-          {/* Knot */}
-          <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-gradient-to-b ${gradient}`} />
-          {/* Equation text */}
-          <span className="text-foreground font-bold text-xs text-center leading-tight px-1 drop-shadow-md select-none">
+
+        {/* Glossy Apple Balloon Body */}
+        <div
+          className={`relative w-[84px] h-[102px] rounded-[50%_50%_50%_50%_/_40%_40%_60%_60%] bg-gradient-to-b ${scheme.bg} flex items-center justify-center transition-transform hover:scale-105 active:scale-95 duration-100 ${
+            powerIcon ? 'ring-2 ring-[#ffd60a] shadow-[0_0_20px_rgba(255,214,10,0.6)]' : 'shadow-2xl'
+          }`}
+          style={{
+            boxShadow: `0 12px 24px -6px ${scheme.glow}, inset 0 -8px 16px rgba(0,0,0,0.35)`,
+          }}
+        >
+          {/* Specular Glare Highlights */}
+          <div className="absolute top-2.5 left-3.5 w-5 h-8 rounded-[50%] bg-white/45 rotate-[-28deg] blur-[0.5px] pointer-events-none" />
+          <div className="absolute top-4 left-6 w-2 h-3 rounded-[50%] bg-white/60 rotate-[-28deg] pointer-events-none" />
+
+          {/* Bottom Tied Knot */}
+          <div
+            className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-2.5 rounded-b-md bg-gradient-to-b ${scheme.bg}`}
+          />
+
+          {/* Equation Display in SF Pro Tight Typography */}
+          <span
+            className="font-apple-display font-black text-sm tracking-tight text-center px-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+            style={{ color: scheme.text }}
+          >
             {balloon.equation.display}
           </span>
+
+          {/* Power Up Badge */}
           {powerIcon && (
-            <span className="absolute -top-3 -right-2 text-xl drop-shadow-lg select-none animate-bounce">{powerIcon}</span>
+            <span className="absolute -top-3 -right-2 text-xl drop-shadow-md select-none animate-bounce">
+              {powerIcon}
+            </span>
           )}
         </div>
       </div>

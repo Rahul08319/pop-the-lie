@@ -2,11 +2,23 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Balloon, GameState, BALLOON_COLORS, Difficulty, DIFFICULTY_CONFIGS, GameMode, PowerUpType, ActivePowerUps } from './types';
 import { generateEquation } from './mathGenerator';
 import { mulberry32, seedToInt, todaySeedString } from './rng';
-import { playPopCorrect, playPopWrong, playCombo, playGameOver, hapticPop, hapticWrong, hapticGameOver, startBackgroundMusic, stopBackgroundMusic, playPowerUp } from './audioManager';
-import { savePlayablesData, sendPlayablesScore } from './youtubePlayables';
+import {
+  playPopCorrect,
+  playPopWrong,
+  playCombo,
+  playGameOver,
+  hapticPop,
+  hapticWrong,
+  hapticGameOver,
+  startBackgroundMusic,
+  stopBackgroundMusic,
+  playPowerUp,
+  setSystemAudioEnabled,
+} from './audioManager';
+import { platformManager } from '@/platforms/platformManager';
 
-const POWERUP_SPAWN_CHANCE = 0.06; // ~6% of balloons carry a power-up
-const FREEZE_DURATION_MS = 3000;
+const POWERUP_SPAWN_CHANCE = 0.07; // ~7% of balloons carry a power-up
+const FREEZE_DURATION_MS = 3500;
 const DOUBLE_DURATION_MS = 8000;
 
 const emptyPowerUps = (): ActivePowerUps => ({ freezeUntil: 0, doubleUntil: 0 });
@@ -25,7 +37,7 @@ const getInitialState = (
     level: 1,
     combo: 0,
     bestCombo: 0,
-    highScore: parseInt(localStorage.getItem('popTheLie_highScore') || '0'),
+    highScore: parseInt(localStorage.getItem('popTheLie_highScore') || '0', 10) || 0,
     balloonsPopped: 0,
     missedLies: 0,
     difficulty,
@@ -41,8 +53,33 @@ export function useGameEngine() {
   const [gameState, setGameState] = useState<GameState>(getInitialState());
   const [balloons, setBalloons] = useState<Balloon[]>([]);
   const [floatingScores, setFloatingScores] = useState<{ id: string; x: number; y: number; text: string; type: 'good' | 'bad' | 'power' }[]>([]);
+  const [lifeLostAt, setLifeLostAt] = useState<number>(0);
+  const [canRevive, setCanRevive] = useState<boolean>(true);
+
   const spawnTimeoutRef = useRef<number | null>(null);
   const rngRef = useRef<() => number>(Math.random);
+
+  // Synchronize audio and platform lifecycle
+  useEffect(() => {
+    const adapter = platformManager.getAdapter();
+
+    // Sync audio
+    setSystemAudioEnabled(adapter.isAudioEnabled());
+    const cleanupAudio = adapter.onAudioEnabledChange((enabled) => {
+      setSystemAudioEnabled(enabled);
+    });
+
+    // Sync cloud save
+    adapter.loadData().then((save) => {
+      if (save?.highScore) {
+        setGameState(gs => ({ ...gs, highScore: Math.max(gs.highScore, save.highScore) }));
+      }
+    }).catch(err => adapter.logWarning(err));
+
+    return () => {
+      cleanupAudio();
+    };
+  }, []);
 
   const pickPowerUp = useCallback((rand: () => number): PowerUpType | undefined => {
     if (rand() > POWERUP_SPAWN_CHANCE) return undefined;
@@ -66,8 +103,6 @@ export function useGameEngine() {
     setBalloons(prev => [...prev, balloon]);
   }, [pickPowerUp]);
 
-  const [lifeLostAt, setLifeLostAt] = useState<number>(0);
-
   const initRng = useCallback((mode: GameMode, dailySeed: string) => {
     if (mode === 'daily' && dailySeed) {
       rngRef.current = mulberry32(seedToInt(dailySeed));
@@ -84,27 +119,61 @@ export function useGameEngine() {
     balloonIdCounter = 0;
     setBalloons([]);
     setFloatingScores([]);
+    setCanRevive(true);
     const seed = mode === 'daily' ? todaySeedString() : '';
     initRng(mode, seed);
     const initial = getInitialState(difficulty, mode, seed);
     setGameState({ ...initial, status: 'playing', highScore: initial.highScore });
     startBackgroundMusic();
+    platformManager.getAdapter().gameplayStart?.();
   }, [initRng]);
 
   const pauseGame = useCallback(() => {
-    setGameState(gs => gs.status === 'playing' ? { ...gs, status: 'paused' } : gs);
+    setGameState(gs => {
+      if (gs.status === 'playing') {
+        platformManager.getAdapter().gameplayStop?.();
+        return { ...gs, status: 'paused' };
+      }
+      return gs;
+    });
   }, []);
 
   const resumeGame = useCallback(() => {
-    setGameState(gs => gs.status === 'paused' ? { ...gs, status: 'playing' } : gs);
+    setGameState(gs => {
+      if (gs.status === 'paused') {
+        platformManager.getAdapter().gameplayStart?.();
+        return { ...gs, status: 'playing' };
+      }
+      return gs;
+    });
   }, []);
 
   const quitToMenu = useCallback(() => {
     setBalloons([]);
     setFloatingScores([]);
     stopBackgroundMusic();
+    platformManager.getAdapter().gameplayStop?.();
     setGameState(gs => ({ ...getInitialState(gs.difficulty, 'classic', ''), highScore: gs.highScore }));
   }, []);
+
+  // Rewarded ad revive mechanism
+  const triggerRewardedRevive = useCallback(async (): Promise<boolean> => {
+    if (!canRevive) return false;
+    const adapter = platformManager.getAdapter();
+    const success = await adapter.showRewardedAd('revive-life');
+    if (success) {
+      setCanRevive(false);
+      setGameState(gs => ({
+        ...gs,
+        status: 'playing',
+        lives: 1,
+      }));
+      startBackgroundMusic();
+      adapter.gameplayStart?.();
+      return true;
+    }
+    return false;
+  }, [canRevive]);
 
   const applyPowerUp = useCallback((type: PowerUpType, gs: GameState, x: number, y: number): GameState => {
     const now = Date.now();
@@ -121,6 +190,24 @@ export function useGameEngine() {
     return gs;
   }, []);
 
+  const handleGameOver = useCallback((finalScore: number, finalHighScore: number) => {
+    setTimeout(() => {
+      playGameOver();
+      hapticGameOver();
+      stopBackgroundMusic();
+      const adapter = platformManager.getAdapter();
+      adapter.gameplayStop?.();
+      // Trigger platform interstitial ad on gameover
+      void adapter.showInterstitialAd();
+      void adapter.sendScore(finalScore);
+      void adapter.saveData({
+        version: 1,
+        highScore: finalHighScore,
+        lastSavedAt: Date.now(),
+      });
+    }, 300);
+  }, []);
+
   const popBalloon = useCallback((id: string, clientX: number, clientY: number) => {
     setBalloons(prev => {
       const balloon = prev.find(b => b.id === id);
@@ -129,8 +216,6 @@ export function useGameEngine() {
       const isLie = !balloon.equation.isCorrect;
 
       setGameState(gs => {
-            void savePlayablesData({ version: 1, highScore: newHighScore });
-            void sendPlayablesScore(newHighScore);
         if (gs.status !== 'playing') return gs;
 
         if (isLie) {
@@ -146,6 +231,9 @@ export function useGameEngine() {
 
           if (newHighScore > gs.highScore) {
             localStorage.setItem('popTheLie_highScore', String(newHighScore));
+            const adapter = platformManager.getAdapter();
+            void adapter.saveData({ version: 1, highScore: newHighScore, lastSavedAt: Date.now() });
+            void adapter.sendScore(newHighScore);
           }
 
           playPopCorrect();
@@ -190,7 +278,7 @@ export function useGameEngine() {
 
           setLifeLostAt(Date.now());
           if (newLives <= 0) {
-            setTimeout(() => { playGameOver(); hapticGameOver(); stopBackgroundMusic(); }, 300);
+            handleGameOver(gs.score, gs.highScore);
             return { ...gs, lives: 0, combo: 0, status: 'gameover' };
           }
           return { ...gs, lives: newLives, combo: 0 };
@@ -199,7 +287,7 @@ export function useGameEngine() {
 
       return prev.map(b => b.id === id ? { ...b, popped: true, popResult: isLie ? 'correct' : 'wrong' } : b);
     });
-  }, [applyPowerUp]);
+  }, [applyPowerUp, handleGameOver]);
 
   // Handle missed lies (paused while freeze is active)
   useEffect(() => {
@@ -218,7 +306,7 @@ export function useGameEngine() {
             const newLives = gs.lives - escaped.length;
             setLifeLostAt(Date.now());
             if (newLives <= 0) {
-              setTimeout(() => { playGameOver(); hapticGameOver(); stopBackgroundMusic(); }, 300);
+              handleGameOver(gs.score, gs.highScore);
               return { ...gs, lives: 0, status: 'gameover', missedLies: gs.missedLies + escaped.length };
             }
             return { ...gs, lives: newLives, combo: 0, missedLies: gs.missedLies + escaped.length };
@@ -233,7 +321,7 @@ export function useGameEngine() {
     }, 500);
 
     return () => clearInterval(interval);
-  }, [gameState.status, gameState.powerUps.freezeUntil]);
+  }, [gameState.status, gameState.powerUps.freezeUntil, gameState.score, gameState.highScore, handleGameOver]);
 
   // Spawn balloons (recursive timeout so we can pause during freeze)
   useEffect(() => {
@@ -269,5 +357,18 @@ export function useGameEngine() {
     return () => clearInterval(interval);
   }, []);
 
-  return { gameState, balloons, floatingScores, lifeLostAt, startGame, popBalloon, pauseGame, resumeGame, quitToMenu, hydrateHighScore };
+  return {
+    gameState,
+    balloons,
+    floatingScores,
+    lifeLostAt,
+    canRevive,
+    startGame,
+    popBalloon,
+    pauseGame,
+    resumeGame,
+    quitToMenu,
+    hydrateHighScore,
+    triggerRewardedRevive,
+  };
 }

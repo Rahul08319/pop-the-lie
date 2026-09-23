@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        apple: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'system-ui', 'sans-serif'],
+        game: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Fredoka One"', 'cursive', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,6 +51,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        apple: {
+          action: "#0066cc",
+          focus: "#0071e3",
+          sky: "#2997ff",
+          ink: "#1d1d1f",
+          parchment: "#f5f5f7",
+          pearl: "#fafafc",
+          tile1: "#272729",
+          tile2: "#2a2a2c",
+          hairline: "rgba(255, 255, 255, 0.15)",
+        },
         game: {
           "sky-top": "hsl(var(--game-sky-top))",
           "sky-bottom": "hsl(var(--game-sky-bottom))",
@@ -76,23 +91,17 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        "apple-card": "18px",
+        "apple-pill": "9999px",
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {

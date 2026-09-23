@@ -1,54 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
-
 @layer base {
   :root {
-    --background: 220 30% 12%;
-    --foreground: 45 100% 96%;
+    --background: 220 30% 10%;
+    --foreground: 0 0% 98%;
 
-    --card: 220 25% 18%;
-    --card-foreground: 45 100% 96%;
+    --card: 224 25% 15%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 25% 18%;
-    --popover-foreground: 45 100% 96%;
+    --popover: 224 25% 15%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 45 100% 60%;
-    --primary-foreground: 220 30% 12%;
+    /* Apple Action Blue & System Accents */
+    --primary: 211 100% 50%; /* #0066cc */
+    --primary-focus: 210 100% 55%; /* #0071e3 */
+    --primary-on-dark: 210 100% 64%; /* #2997ff */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 340 80% 55%;
-    --secondary-foreground: 45 100% 96%;
+    --secondary: 345 82% 58%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 20% 22%;
-    --muted-foreground: 220 15% 60%;
+    --muted: 220 20% 20%;
+    --muted-foreground: 220 15% 65%;
 
-    --accent: 160 70% 45%;
-    --accent-foreground: 220 30% 12%;
+    --accent: 154 68% 48%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 45 100% 96%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 25%;
-    --input: 220 20% 25%;
-    --ring: 45 100% 60%;
+    --border: 220 20% 22%;
+    --input: 220 20% 22%;
+    --ring: 211 100% 50%;
 
-    --radius: 1rem;
+    --radius: 1.125rem; /* Apple 18px radius */
 
     /* Game-specific tokens */
-    --game-sky-top: 220 60% 8%;
-    --game-sky-bottom: 240 40% 18%;
-    --game-balloon-red: 0 75% 55%;
-    --game-balloon-blue: 210 80% 55%;
-    --game-balloon-green: 140 65% 45%;
-    --game-balloon-yellow: 45 95% 55%;
-    --game-balloon-purple: 280 65% 55%;
-    --game-balloon-orange: 25 90% 55%;
-    --game-correct-glow: 140 70% 50%;
-    --game-wrong-glow: 0 80% 55%;
-    --game-score: 45 100% 60%;
-    --game-combo: 280 80% 65%;
+    --game-sky-top: 225 35% 8%;
+    --game-sky-bottom: 230 40% 14%;
+    --game-balloon-red: 0 80% 56%;
+    --game-balloon-blue: 211 100% 50%;
+    --game-balloon-green: 142 70% 45%;
+    --game-balloon-yellow: 42 98% 54%;
+    --game-balloon-purple: 275 75% 58%;
+    --game-balloon-orange: 26 95% 54%;
+    --game-correct-glow: 142 75% 50%;
+    --game-wrong-glow: 0 85% 58%;
+    --game-score: 42 98% 54%;
+    --game-combo: 275 85% 65%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -57,7 +60,7 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 211 100% 50%;
   }
 }
 
@@ -67,42 +70,114 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Nunito', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Nunito", system-ui, sans-serif;
     overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
 @layer components {
+  /* Apple Headline & Display Typography */
+  .font-apple-display {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+    letter-spacing: -0.025em;
+  }
+
   .font-game-title {
-    font-family: 'Fredoka One', cursive;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Fredoka One", cursive, sans-serif;
+    letter-spacing: -0.015em;
+  }
+
+  /* Apple Frosted Glass Materials */
+  .apple-glass {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .apple-glass-dark {
+    background: rgba(29, 29, 31, 0.72);
+    backdrop-filter: blur(25px) saturate(190%);
+    -webkit-backdrop-filter: blur(25px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.35);
+  }
+
+  /* Apple Action Blue Pill Button */
+  .apple-pill-btn {
+    background-color: #0066cc;
+    color: #ffffff;
+    border-radius: 9999px;
+    font-weight: 500;
+    transition: transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 150ms ease, box-shadow 150ms ease;
+    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.35);
+  }
+
+  .apple-pill-btn:hover {
+    background-color: #0071e3;
+    box-shadow: 0 4px 14px rgba(0, 102, 204, 0.45);
+  }
+
+  .apple-pill-btn:active {
+    transform: scale(0.96);
+  }
+
+  /* Apple Ghost Pill */
+  .apple-ghost-pill {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    backdrop-filter: blur(10px);
+    transition: transform 120ms cubic-bezier(0.2, 0.8, 0.2, 1), background-color 150ms ease;
+  }
+
+  .apple-ghost-pill:hover {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .apple-ghost-pill:active {
+    transform: scale(0.96);
+  }
+
+  /* Apple Card Container */
+  .apple-card {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
   }
 }
 
 @keyframes float-up {
   0% {
-    transform: translateY(100vh) scale(0.3);
+    transform: translateY(105vh) scale(0.4);
     opacity: 0;
   }
-  10% {
+  8% {
     opacity: 1;
-    transform: translateY(85vh) scale(1);
+    transform: translateY(90vh) scale(1);
   }
-  90% {
+  92% {
     opacity: 1;
   }
   100% {
-    transform: translateY(-20vh) scale(1);
+    transform: translateY(-25vh) scale(0.95);
     opacity: 0;
   }
 }
 
 @keyframes sway {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(12px); }
-  75% { transform: translateX(-12px); }
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(10px) rotate(2deg); }
+  75% { transform: translateX(-10px) rotate(-2deg); }
 }
 
 @keyframes pop-burst {
@@ -110,75 +185,66 @@
     transform: scale(1);
     opacity: 1;
   }
-  50% {
-    transform: scale(1.6);
-    opacity: 0.5;
+  40% {
+    transform: scale(1.4);
+    opacity: 0.8;
   }
   100% {
-    transform: scale(0);
+    transform: scale(0.1);
     opacity: 0;
   }
 }
 
 @keyframes score-fly {
   0% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(0.9);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(-10px) scale(1.1);
     opacity: 1;
   }
   100% {
-    transform: translateY(-80px) scale(1.5);
+    transform: translateY(-80px) scale(1.3);
     opacity: 0;
   }
 }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  10% { transform: translateX(-10px) rotate(-1deg); }
-  20% { transform: translateX(10px) rotate(1deg); }
-  30% { transform: translateX(-8px) rotate(-0.5deg); }
-  40% { transform: translateX(8px) rotate(0.5deg); }
-  50% { transform: translateX(-5px); }
-  60% { transform: translateX(5px); }
-  70% { transform: translateX(-3px); }
-  80% { transform: translateX(3px); }
-}
-
-@keyframes life-lost-flash {
-  0% { background-color: hsl(0 80% 55% / 0.4); }
-  100% { background-color: transparent; }
-}
-
-@keyframes particle-explode {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(var(--px, 0), var(--py, 0)) scale(0);
-    opacity: 0;
-  }
-}
-
-.animate-life-lost-flash {
-  animation: life-lost-flash 0.5s ease-out forwards;
-}
-
-.animate-particle-explode {
-  animation: particle-explode 0.6s ease-out forwards;
+  15% { transform: translateX(-8px) rotate(-0.8deg); }
+  30% { transform: translateX(8px) rotate(0.8deg); }
+  50% { transform: translateX(-5px) rotate(-0.4deg); }
+  70% { transform: translateX(5px) rotate(0.4deg); }
+  85% { transform: translateX(-2px); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.3); }
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(0, 102, 204, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(41, 151, 255, 0.9));
+  }
 }
 
-@keyframes stars-twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+@keyframes spring-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .animate-float-up {
-  animation: float-up var(--float-duration, 8s) linear forwards;
+  animation: float-up var(--float-duration, 5s) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
 .animate-sway {
@@ -186,22 +252,21 @@
 }
 
 .animate-pop {
-  animation: pop-burst 0.3s ease-out forwards;
+  animation: pop-burst 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 .animate-score-fly {
-  animation: score-fly 0.8s ease-out forwards;
+  animation: score-fly 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .animate-shake {
-  animation: shake 0.5s ease-in-out;
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-.animate-twinkle {
-  animation: stars-twinkle var(--twinkle-duration, 3s) ease-in-out infinite;
-  animation-delay: var(--twinkle-delay, 0s);
+.animate-spring-in {
+  animation: spring-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

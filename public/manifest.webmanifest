@@ -1,0 +1,24 @@
+{
+  "name": "Pop the Lie - Math Balloon Game",
+  "short_name": "PopTheLie",
+  "description": "Pop balloons with incorrect math equations! Fast-paced, brain-sharpening balloon popping action.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1117",
+  "theme_color": "#0066cc",
+  "categories": ["games", "education", "puzzle"],
+  "icons": [
+    {
+      "src": "./placeholder.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

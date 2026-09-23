@@ -5,115 +5,159 @@ import { playButtonClick } from '@/game/audioManager';
 
 interface GameOverProps {
   gameState: GameState;
+  canRevive?: boolean;
+  onRewardedRevive?: () => Promise<boolean>;
   onRestart: (difficulty: Difficulty) => void;
   onShowLeaderboard: () => void;
   onShowDailyLeaderboard: () => void;
   onSaveScore: () => void;
 }
 
-export function GameOverScreen({ gameState, onRestart, onShowLeaderboard, onShowDailyLeaderboard, onSaveScore }: GameOverProps) {
+export function GameOverScreen({
+  gameState,
+  canRevive,
+  onRewardedRevive,
+  onRestart,
+  onShowLeaderboard,
+  onShowDailyLeaderboard,
+  onSaveScore,
+}: GameOverProps) {
   const isNewHighScore = gameState.score >= gameState.highScore && gameState.score > 0;
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(gameState.difficulty);
   const [scoreSaved, setScoreSaved] = useState(false);
+  const [isWatchingAd, setIsWatchingAd] = useState(false);
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
 
-  const difficultyColors: Record<Difficulty, string> = {
-    easy: 'from-accent to-accent/70 border-accent/50',
-    medium: 'from-primary to-primary/70 border-primary/50',
-    hard: 'from-secondary to-secondary/70 border-secondary/50',
+  const handleReviveClick = async () => {
+    if (!onRewardedRevive || isWatchingAd) return;
+    playButtonClick();
+    setIsWatchingAd(true);
+    try {
+      await onRewardedRevive();
+    } finally {
+      setIsWatchingAd(false);
+    }
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-game-sky-top to-game-sky-bottom overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#0c1017] via-[#141a24] to-[#0a0e14] overflow-hidden px-4 select-none">
       <StarField />
 
-      <div className="relative z-10 flex flex-col items-center gap-5 px-6">
-        <h1 className="font-game-title text-5xl md:text-7xl text-secondary drop-shadow-lg">
-          Game Over
-        </h1>
+      <div className="relative z-10 flex flex-col items-center gap-4 max-w-sm w-full animate-spring-in">
+        {/* Header */}
+        <div className="text-center space-y-1">
+          <h1 className="font-apple-display text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg">
+            Game Over
+          </h1>
+          {isNewHighScore ? (
+            <div className="inline-block px-3 py-1 rounded-full bg-[#f5c518]/20 border border-[#f5c518]/40 text-[#f5c518] text-xs font-bold animate-pulse-glow">
+              🏆 New Personal Best! 🏆
+            </div>
+          ) : (
+            <p className="text-xs text-white/60">Good run! Sharpen your reflexes and try again.</p>
+          )}
+        </div>
 
-        {isNewHighScore && (
-          <div className="font-game-title text-xl text-game-score animate-pulse-glow">
-            🏆 New High Score! 🏆
+        {/* Apple Stats Card */}
+        <div className="apple-card p-5 w-full space-y-3">
+          <div className="flex justify-between items-baseline">
+            <span className="text-xs font-medium text-white/60 uppercase tracking-wider">Score</span>
+            <span className="font-apple-display text-3xl font-extrabold text-[#f5c518]">{gameState.score}</span>
           </div>
-        )}
 
-        <div className="bg-card/60 backdrop-blur-md rounded-2xl p-5 min-w-[280px] border border-border">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold text-sm">Score</span>
-              <span className="font-game-title text-2xl text-game-score">{gameState.score}</span>
+          <div className="h-px bg-white/10" />
+
+          <div className="grid grid-cols-3 gap-2 text-center pt-1">
+            <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+              <span className="text-[10px] text-white/50 uppercase block font-semibold">Level</span>
+              <span className="font-apple-display text-base font-bold text-white">{gameState.level}</span>
             </div>
-            <div className="h-px bg-border" />
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold text-sm">Level</span>
-              <span className="font-game-title text-lg text-primary">{gameState.level}</span>
+            <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+              <span className="text-[10px] text-white/50 uppercase block font-semibold">Popped</span>
+              <span className="font-apple-display text-base font-bold text-emerald-400">{gameState.balloonsPopped}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold text-sm">Lies Popped</span>
-              <span className="font-game-title text-lg text-accent">{gameState.balloonsPopped}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold text-sm">Best Combo</span>
-              <span className="font-game-title text-lg text-game-combo">x{gameState.bestCombo}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground font-semibold text-sm">Difficulty</span>
-              <span className="font-game-title text-lg">{DIFFICULTY_CONFIGS[gameState.difficulty].emoji} {DIFFICULTY_CONFIGS[gameState.difficulty].label}</span>
+            <div className="p-2 rounded-xl bg-white/5 border border-white/5">
+              <span className="text-[10px] text-white/50 uppercase block font-semibold">Combo</span>
+              <span className="font-apple-display text-base font-bold text-[#d28eff]">x{gameState.bestCombo}</span>
             </div>
           </div>
         </div>
 
-        {/* Save & Leaderboard buttons */}
-        <div className="flex gap-2">
+        {/* Rewarded Ad Revive Opportunity */}
+        {canRevive && onRewardedRevive && (
+          <button
+            onClick={handleReviveClick}
+            disabled={isWatchingAd}
+            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 hover:border-emerald-500/70 text-emerald-300 font-semibold text-xs flex items-center justify-between transition-all active:scale-[0.97] shadow-lg"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-base">❤️</span>
+              <div className="text-left">
+                <span className="block font-bold leading-tight">Continue with +1 Life</span>
+                <span className="text-[10px] text-emerald-400/80">Watch 1 short sponsored ad</span>
+              </div>
+            </div>
+            <span className="text-xs bg-emerald-400/20 px-2.5 py-1 rounded-full text-emerald-300">
+              {isWatchingAd ? 'Loading...' : 'Watch Ad →'}
+            </span>
+          </button>
+        )}
+
+        {/* Difficulty Selector Segmented Control */}
+        <div className="w-full space-y-1">
+          <div className="grid grid-cols-3 p-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
+            {difficulties.map((diff) => {
+              const config = DIFFICULTY_CONFIGS[diff];
+              const isSelected = selectedDifficulty === diff;
+              return (
+                <button
+                  key={diff}
+                  onClick={() => {
+                    setSelectedDifficulty(diff);
+                    playButtonClick();
+                  }}
+                  className={`py-1.5 px-2 rounded-full text-xs font-semibold transition-all active:scale-[0.96] flex items-center justify-center gap-1 ${
+                    isSelected ? 'bg-white text-black shadow-sm' : 'text-white/70 hover:text-white'
+                  }`}
+                >
+                  <span>{config.emoji}</span>
+                  <span>{config.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Secondary Actions */}
+        <div className="flex items-center justify-center gap-2 w-full">
           {!scoreSaved && gameState.score > 0 && (
             <button
               onClick={() => { playButtonClick(); setScoreSaved(true); onSaveScore(); }}
-              className="font-game-title text-xs bg-game-combo/20 border border-game-combo/40 px-4 py-2 rounded-full text-game-combo hover:scale-105 active:scale-95 transition-transform"
+              className="flex-1 apple-ghost-pill py-2 text-xs font-semibold text-center"
             >
-              💾 Save Score
+              💾 Save
             </button>
           )}
           <button
             onClick={() => { playButtonClick(); onShowLeaderboard(); }}
-            className="font-game-title text-xs bg-primary/20 border border-primary/40 px-4 py-2 rounded-full text-primary hover:scale-105 active:scale-95 transition-transform"
+            className="flex-1 apple-ghost-pill py-2 text-xs font-semibold text-center"
           >
-            🏆 Leaderboard
+            🏆 Scores
           </button>
           <button
             onClick={() => { playButtonClick(); onShowDailyLeaderboard(); }}
-            className="font-game-title text-xs bg-game-score/20 border border-game-score/40 px-4 py-2 rounded-full text-game-score hover:scale-105 active:scale-95 transition-transform"
+            className="flex-1 apple-ghost-pill py-2 text-xs font-semibold text-center"
           >
             🌍 Daily
           </button>
         </div>
 
-        {/* Quick difficulty change */}
-        <div className="flex gap-2">
-          {difficulties.map((diff) => {
-            const config = DIFFICULTY_CONFIGS[diff];
-            const isSelected = selectedDifficulty === diff;
-            return (
-              <button
-                key={diff}
-                onClick={() => { setSelectedDifficulty(diff); playButtonClick(); }}
-                className={`rounded-lg px-3 py-1.5 text-xs font-game-title border transition-all ${
-                  isSelected
-                    ? `bg-gradient-to-b ${difficultyColors[diff]} scale-105`
-                    : 'bg-card/40 border-border/50'
-                }`}
-              >
-                {config.emoji} {config.label}
-              </button>
-            );
-          })}
-        </div>
-
+        {/* Primary Play Again Button */}
         <button
           onClick={() => { playButtonClick(); onRestart(selectedDifficulty); }}
-          className="font-game-title text-xl bg-gradient-to-r from-primary to-game-score px-10 py-3 rounded-full text-primary-foreground shadow-xl hover:scale-105 active:scale-95 transition-transform"
+          className="apple-pill-btn w-full py-4 text-base tracking-tight font-bold shadow-xl flex items-center justify-center gap-2 mt-1"
         >
-          🔄 Play Again
+          <span>🔄</span> Play Again
         </button>
       </div>
     </div>

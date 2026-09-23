@@ -99,3 +99,8 @@ export const BALLOON_COLORS = [
   'balloon-purple',
   'balloon-orange',
 ] as const;
+
+export interface PlayablesSaveData {
+  version: 1;
+  highScore: number;
+}
