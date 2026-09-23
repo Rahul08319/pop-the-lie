@@ -2,9 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+import { GameArena } from "./components/game/GameArena";
 
 const queryClient = new QueryClient();
 
@@ -13,13 +11,12 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <main
+        className="fixed inset-0 w-screen h-screen overflow-hidden select-none touch-none overscroll-none bg-[#0c1017]"
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        <GameArena />
+      </main>
     </TooltipProvider>
   </QueryClientProvider>
 );

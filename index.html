@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>Pop the Lie - Fast Math Reflex Arcade Game</title>
-    <meta name="description" content="Pop balloons with wrong math equations! A fast-paced, brain-sharpening reflex game optimized for YouTube Playables, Facebook Instant Games, Poki, CrazyGames, and modern browsers." />
+    <title>Pop the Lie - Fast Math Arcade Game</title>
+    <meta name="description" content="Pop balloons with wrong math equations! A fast-paced, brain-sharpening reflex arcade game optimized for YouTube Playables, Facebook Instant Games, Poki, CrazyGames, and modern browsers." />
     <meta name="author" content="Rahul08319" />
     <meta name="theme-color" content="#0066cc" />
 
@@ -15,14 +15,40 @@
     <link rel="manifest" href="./manifest.webmanifest" />
 
     <!-- Open Graph / Social -->
-    <meta property="og:title" content="Pop the Lie - Fast Math Balloon Game" />
+    <meta property="og:title" content="Pop the Lie - Fast Math Arcade Game" />
     <meta property="og:description" content="Test your math reflexes! Pop the false equations and protect the truth." />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="game" />
     <meta property="og:image" content="./placeholder.svg" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Pop the Lie" />
-    <meta name="twitter:description" content="Pop balloons with wrong math equations! A sleek Apple-designed math reflex game." />
+    <meta name="twitter:title" content="Pop the Lie - Fast Math Arcade Game" />
+    <meta name="twitter:description" content="Pop balloons with wrong math equations! A fast-paced math reflex arcade game." />
+
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        position: fixed;
+        inset: 0;
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        overscroll-behavior: none;
+        background-color: #0c1017;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+    </style>
+    <script>
+      window.addEventListener('contextmenu', function (e) { e.preventDefault(); }, { passive: false });
+    </script>
 
     <!-- YouTube Playables SDK v1 - MUST be loaded before any game code -->
     <script src="https://www.youtube.com/game_api/v1"></script>

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GameState, Difficulty, DIFFICULTY_CONFIGS } from '@/game/types';
 import { StarField } from './StarField';
-import { playButtonClick } from '@/game/audioManager';
+import { playButtonClick, playScoreTick } from '@/game/audioManager';
 
 interface GameOverProps {
   gameState: GameState;
@@ -11,6 +11,7 @@ interface GameOverProps {
   onShowLeaderboard: () => void;
   onShowDailyLeaderboard: () => void;
   onSaveScore: () => void;
+  onQuit?: () => void;
 }
 
 export function GameOverScreen({
@@ -21,12 +22,40 @@ export function GameOverScreen({
   onShowLeaderboard,
   onShowDailyLeaderboard,
   onSaveScore,
+  onQuit,
 }: GameOverProps) {
   const isNewHighScore = gameState.score >= gameState.highScore && gameState.score > 0;
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>(gameState.difficulty);
   const [scoreSaved, setScoreSaved] = useState(false);
   const [isWatchingAd, setIsWatchingAd] = useState(false);
+  const [displayScore, setDisplayScore] = useState(0);
+
   const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
+
+  // Animate score counting up from 0 to final score
+  useEffect(() => {
+    if (gameState.score <= 0) {
+      setDisplayScore(0);
+      return;
+    }
+    const target = gameState.score;
+    const duration = 1000;
+    const startTime = Date.now();
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(1, elapsed / duration);
+      const current = Math.floor(progress * target);
+      setDisplayScore(current);
+      playScoreTick();
+
+      if (progress >= 1) {
+        clearInterval(interval);
+      }
+    }, 40);
+
+    return () => clearInterval(interval);
+  }, [gameState.score]);
 
   const handleReviveClick = async () => {
     if (!onRewardedRevive || isWatchingAd) return;
@@ -40,45 +69,54 @@ export function GameOverScreen({
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#0c1017] via-[#141a24] to-[#0a0e14] overflow-hidden px-4 select-none">
+    <div
+      className="fixed inset-0 w-screen h-screen overflow-hidden select-none touch-none overscroll-none bg-gradient-to-b from-[#180a14] via-[#151020] to-[#07050f] flex flex-col items-center justify-between p-4 sm:p-6"
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <StarField />
 
-      <div className="relative z-10 flex flex-col items-center gap-4 max-w-sm w-full animate-spring-in">
-        {/* Header */}
-        <div className="text-center space-y-1">
-          <h1 className="font-apple-display text-4xl sm:text-5xl font-black text-white tracking-tight drop-shadow-lg">
-            Game Over
-          </h1>
-          {isNewHighScore ? (
-            <div className="inline-block px-3 py-1 rounded-full bg-[#f5c518]/20 border border-[#f5c518]/40 text-[#f5c518] text-xs font-bold animate-pulse-glow">
-              🏆 New Personal Best! 🏆
-            </div>
-          ) : (
-            <p className="text-xs text-white/60">Good run! Sharpen your reflexes and try again.</p>
-          )}
-        </div>
+      {/* Header: GAME OVER */}
+      <header className="relative z-20 text-center space-y-1 pt-2 animate-spring-in">
+        <h1 className="font-arcade text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-rose-400 via-red-500 to-rose-700 drop-shadow-[0_8px_16px_rgba(0,0,0,0.8)] tracking-wider">
+          GAME OVER
+        </h1>
+        {isNewHighScore ? (
+          <div className="inline-block px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/30 via-yellow-400/30 to-amber-500/30 border border-amber-400 text-amber-300 font-arcade text-xs sm:text-sm font-bold animate-pulse shadow-[0_0_20px_rgba(245,158,11,0.5)]">
+            👑 NEW ALL-TIME RECORD! 👑
+          </div>
+        ) : (
+          <p className="font-arcade text-xs text-white/60">Good run! Sharpen your reflexes and try again.</p>
+        )}
+      </header>
 
-        {/* Apple Stats Card */}
-        <div className="apple-card p-5 w-full space-y-3">
-          <div className="flex justify-between items-baseline">
-            <span className="text-xs font-medium text-white/60 uppercase tracking-wider">Score</span>
-            <span className="font-apple-display text-3xl font-extrabold text-[#f5c518]">{gameState.score}</span>
+      {/* Main Scoreboard Cabinet */}
+      <main className="relative z-20 w-full max-w-sm flex flex-col items-center gap-3 my-auto animate-spring-in">
+        {/* Big Score Box */}
+        <div className="w-full rounded-3xl bg-black/50 border-2 border-white/15 backdrop-blur-xl p-5 text-center shadow-2xl space-y-3">
+          <div className="flex flex-col items-center justify-center">
+            <span className="text-[11px] font-arcade uppercase font-bold text-amber-300/80 tracking-widest">
+              Final Score
+            </span>
+            <span className="font-arcade text-6xl font-black text-amber-300 drop-shadow-[0_4px_16px_rgba(245,158,11,0.6)] leading-tight">
+              {displayScore}
+            </span>
           </div>
 
-          <div className="h-px bg-white/10" />
+          <div className="h-px bg-white/10 w-full" />
 
-          <div className="grid grid-cols-3 gap-2 text-center pt-1">
-            <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-              <span className="text-[10px] text-white/50 uppercase block font-semibold">Level</span>
-              <span className="font-apple-display text-base font-bold text-white">{gameState.level}</span>
+          {/* Stats Badges */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="p-2.5 rounded-2xl bg-white/5 border border-white/5 flex flex-col items-center">
+              <span className="text-[10px] font-arcade text-white/50 uppercase font-bold">Level</span>
+              <span className="font-arcade text-lg font-bold text-white mt-0.5">{gameState.level}</span>
             </div>
-            <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-              <span className="text-[10px] text-white/50 uppercase block font-semibold">Popped</span>
-              <span className="font-apple-display text-base font-bold text-emerald-400">{gameState.balloonsPopped}</span>
+            <div className="p-2.5 rounded-2xl bg-white/5 border border-white/5 flex flex-col items-center">
+              <span className="text-[10px] font-arcade text-white/50 uppercase font-bold">Popped</span>
+              <span className="font-arcade text-lg font-bold text-emerald-400 mt-0.5">{gameState.balloonsPopped}</span>
             </div>
-            <div className="p-2 rounded-xl bg-white/5 border border-white/5">
-              <span className="text-[10px] text-white/50 uppercase block font-semibold">Combo</span>
-              <span className="font-apple-display text-base font-bold text-[#d28eff]">x{gameState.bestCombo}</span>
+            <div className="p-2.5 rounded-2xl bg-white/5 border border-white/5 flex flex-col items-center">
+              <span className="text-[10px] font-arcade text-white/50 uppercase font-bold">Best Streak</span>
+              <span className="font-arcade text-lg font-bold text-purple-300 mt-0.5">x{gameState.bestCombo}</span>
             </div>
           </div>
         </div>
@@ -88,78 +126,84 @@ export function GameOverScreen({
           <button
             onClick={handleReviveClick}
             disabled={isWatchingAd}
-            className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 hover:border-emerald-500/70 text-emerald-300 font-semibold text-xs flex items-center justify-between transition-all active:scale-[0.97] shadow-lg"
+            className="w-full py-3.5 px-4 rounded-3xl bg-gradient-to-r from-emerald-600/30 via-teal-500/30 to-emerald-600/30 border-2 border-emerald-400/60 hover:border-emerald-300 text-white font-arcade text-xs flex items-center justify-between transition-all active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-pulse"
           >
-            <div className="flex items-center gap-2">
-              <span className="text-base">❤️</span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">❤️</span>
               <div className="text-left">
-                <span className="block font-bold leading-tight">Continue with +1 Life</span>
-                <span className="text-[10px] text-emerald-400/80">Watch 1 short sponsored ad</span>
+                <span className="block font-bold text-sm text-emerald-300 leading-tight">Continue with +1 Life!</span>
+                <span className="text-[10px] text-white/70">Watch 1 sponsored ad</span>
               </div>
             </div>
-            <span className="text-xs bg-emerald-400/20 px-2.5 py-1 rounded-full text-emerald-300">
-              {isWatchingAd ? 'Loading...' : 'Watch Ad →'}
+            <span className="px-3 py-1.5 rounded-xl bg-emerald-400 text-black font-black text-xs">
+              {isWatchingAd ? 'Loading...' : 'REVIVE ▶'}
             </span>
           </button>
         )}
 
-        {/* Difficulty Selector Segmented Control */}
-        <div className="w-full space-y-1">
-          <div className="grid grid-cols-3 p-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10">
-            {difficulties.map((diff) => {
-              const config = DIFFICULTY_CONFIGS[diff];
-              const isSelected = selectedDifficulty === diff;
-              return (
-                <button
-                  key={diff}
-                  onClick={() => {
-                    setSelectedDifficulty(diff);
-                    playButtonClick();
-                  }}
-                  className={`py-1.5 px-2 rounded-full text-xs font-semibold transition-all active:scale-[0.96] flex items-center justify-center gap-1 ${
-                    isSelected ? 'bg-white text-black shadow-sm' : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  <span>{config.emoji}</span>
-                  <span>{config.label}</span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Quick Difficulty Pills */}
+        <div className="grid grid-cols-3 gap-2 w-full">
+          {difficulties.map((diff) => {
+            const config = DIFFICULTY_CONFIGS[diff];
+            const isSelected = selectedDifficulty === diff;
+            return (
+              <button
+                key={diff}
+                onClick={() => { playButtonClick(); setSelectedDifficulty(diff); }}
+                className={`py-1.5 px-2 rounded-2xl border font-arcade text-xs flex items-center justify-center gap-1 transition-all ${
+                  isSelected
+                    ? 'bg-white/20 border-white text-white shadow-md'
+                    : 'bg-black/30 border-white/10 text-white/50 hover:text-white'
+                }`}
+              >
+                <span>{config.emoji}</span>
+                <span className="font-bold text-[11px]">{config.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Secondary Actions */}
-        <div className="flex items-center justify-center gap-2 w-full">
-          {!scoreSaved && gameState.score > 0 && (
-            <button
-              onClick={() => { playButtonClick(); setScoreSaved(true); onSaveScore(); }}
-              className="flex-1 apple-ghost-pill py-2 text-xs font-semibold text-center"
-            >
-              💾 Save
-            </button>
-          )}
-          <button
-            onClick={() => { playButtonClick(); onShowLeaderboard(); }}
-            className="flex-1 apple-ghost-pill py-2 text-xs font-semibold text-center"
-          >
-            🏆 Scores
-          </button>
-          <button
-            onClick={() => { playButtonClick(); onShowDailyLeaderboard(); }}
-            className="flex-1 apple-ghost-pill py-2 text-xs font-semibold text-center"
-          >
-            🌍 Daily
-          </button>
-        </div>
-
-        {/* Primary Play Again Button */}
+        {/* BIG 3D PLAY AGAIN BUTTON */}
         <button
           onClick={() => { playButtonClick(); onRestart(selectedDifficulty); }}
-          className="apple-pill-btn w-full py-4 text-base tracking-tight font-bold shadow-xl flex items-center justify-center gap-2 mt-1"
+          className="w-full py-4 px-8 rounded-3xl arcade-btn-green font-arcade text-xl font-black text-white tracking-wider flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-xl"
         >
-          <span>🔄</span> Play Again
+          <span>🔄</span>
+          <span>PLAY AGAIN</span>
         </button>
-      </div>
+      </main>
+
+      {/* Bottom Action Row */}
+      <footer className="relative z-20 w-full max-w-sm flex items-center justify-center gap-2 pt-2">
+        {!scoreSaved && gameState.score > 0 && (
+          <button
+            onClick={() => { playButtonClick(); setScoreSaved(true); onSaveScore(); }}
+            className="flex-1 py-2.5 px-2 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 text-white font-arcade text-xs flex items-center justify-center gap-1 shadow-md transition-transform"
+          >
+            <span>💾</span> Save
+          </button>
+        )}
+        <button
+          onClick={() => { playButtonClick(); onShowLeaderboard(); }}
+          className="flex-1 py-2.5 px-2 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 text-white font-arcade text-xs flex items-center justify-center gap-1 shadow-md transition-transform"
+        >
+          <span>🏆</span> Scores
+        </button>
+        <button
+          onClick={() => { playButtonClick(); onShowDailyLeaderboard(); }}
+          className="flex-1 py-2.5 px-2 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 text-white font-arcade text-xs flex items-center justify-center gap-1 shadow-md transition-transform"
+        >
+          <span>🌍</span> Daily
+        </button>
+        {onQuit && (
+          <button
+            onClick={() => { playButtonClick(); onQuit(); }}
+            className="flex-1 py-2.5 px-2 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 text-white font-arcade text-xs flex items-center justify-center gap-1 shadow-md transition-transform"
+          >
+            <span>🏠</span> Menu
+          </button>
+        )}
+      </footer>
     </div>
   );
 }

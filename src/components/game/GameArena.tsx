@@ -63,16 +63,13 @@ export function GameArena() {
 
   if (gameState.status === 'menu') {
     return (
-      <>
-        {showTutorial && <TutorialOverlay onComplete={() => setShowTutorial(false)} />}
-        <MainMenu
-          highScore={gameState.highScore}
-          onStart={(diff: Difficulty) => startGame(diff, 'classic')}
-          onStartDaily={(diff: Difficulty) => startGame(diff, 'daily')}
-          onShowLeaderboard={() => setShowLeaderboard(true)}
-          onShowDailyLeaderboard={() => setShowDailyLeaderboard(true)}
-        />
-      </>
+      <MainMenu
+        highScore={gameState.highScore}
+        onStart={(diff: Difficulty) => startGame(diff, 'classic')}
+        onStartDaily={(diff: Difficulty) => startGame(diff, 'daily')}
+        onShowLeaderboard={() => setShowLeaderboard(true)}
+        onShowDailyLeaderboard={() => setShowDailyLeaderboard(true)}
+      />
     );
   }
 
@@ -135,6 +132,7 @@ export function GameArena() {
         onShowLeaderboard={() => setShowLeaderboard(true)}
         onShowDailyLeaderboard={() => setShowDailyLeaderboard(true)}
         onSaveScore={() => setShowNameInput(true)}
+        onQuit={quitToMenu}
       />
     );
   }
@@ -144,7 +142,10 @@ export function GameArena() {
   const doubleActive = now < gameState.powerUps.doubleUntil;
 
   return (
-    <div className={`relative w-full h-screen bg-gradient-to-b from-[#0c1017] via-[#141a24] to-[#0a0e14] overflow-hidden ${shaking ? 'animate-shake' : ''}`}>
+    <div
+      className={`fixed inset-0 w-screen h-screen overflow-hidden select-none touch-none overscroll-none bg-gradient-to-b from-[#0c1017] via-[#141a24] to-[#0a0e14] ${shaking ? 'animate-shake' : ''}`}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <StarField />
       <GameHUD gameState={gameState} onPause={pauseGame} />
 
@@ -152,17 +153,17 @@ export function GameArena() {
       {(freezeActive || doubleActive || gameState.mode === 'daily') && (
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 pointer-events-none animate-spring-in">
           {gameState.mode === 'daily' && (
-            <span className="text-[10px] font-bold tracking-tight bg-[#f5c518]/20 border border-[#f5c518]/40 px-3 py-1 rounded-full text-[#f5c518] backdrop-blur-md shadow-md">
+            <span className="text-[10px] font-arcade font-bold tracking-tight bg-[#f5c518]/20 border border-[#f5c518]/40 px-3 py-1 rounded-full text-[#f5c518] backdrop-blur-md shadow-md">
               🌍 DAILY CHALLENGE
             </span>
           )}
           {freezeActive && (
-            <span title="Freeze — balloons paused" className="text-[10px] font-bold tracking-tight bg-[#2997ff]/25 border border-[#2997ff]/50 px-3 py-1 rounded-full text-[#2997ff] backdrop-blur-md shadow-md animate-pulse">
+            <span title="Freeze — balloons paused" className="text-[10px] font-arcade font-bold tracking-tight bg-[#2997ff]/25 border border-[#2997ff]/50 px-3 py-1 rounded-full text-[#2997ff] backdrop-blur-md shadow-md animate-pulse">
               ❄️ FROZEN
             </span>
           )}
           {doubleActive && (
-            <span title="Double Points — 2× score" className="text-[10px] font-bold tracking-tight bg-amber-400/25 border border-amber-400/50 px-3 py-1 rounded-full text-amber-300 backdrop-blur-md shadow-md animate-pulse">
+            <span title="Double Points — 2× score" className="text-[10px] font-arcade font-bold tracking-tight bg-amber-400/25 border border-amber-400/50 px-3 py-1 rounded-full text-amber-300 backdrop-blur-md shadow-md animate-pulse">
               ✨ 2X BOOST
             </span>
           )}
@@ -191,12 +192,12 @@ export function GameArena() {
           style={{ left: fs.x, top: fs.y }}
         >
           <span
-            className={`font-apple-display font-extrabold text-xl tracking-tight ${
+            className={`font-arcade font-black text-2xl tracking-wide ${
               fs.type === 'good'
-                ? 'text-emerald-400 drop-shadow-[0_2px_8px_rgba(52,199,89,0.8)]'
+                ? 'text-emerald-400 drop-shadow-[0_2px_10px_rgba(52,199,89,0.9)]'
                 : fs.type === 'bad'
-                ? 'text-rose-400 drop-shadow-[0_2px_8px_rgba(255,59,48,0.8)]'
-                : 'text-[#f5c518] drop-shadow-[0_2px_8px_rgba(245,197,24,0.8)]'
+                ? 'text-rose-400 drop-shadow-[0_2px_10px_rgba(255,59,48,0.9)]'
+                : 'text-amber-300 drop-shadow-[0_2px_10px_rgba(251,191,36,0.9)]'
             }`}
           >
             {fs.text}

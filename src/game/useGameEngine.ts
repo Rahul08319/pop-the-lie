@@ -236,7 +236,7 @@ export function useGameEngine() {
             void adapter.sendScore(newHighScore);
           }
 
-          playPopCorrect();
+          playPopCorrect(newCombo);
           hapticPop();
           if (newCombo >= 3) playCombo();
 

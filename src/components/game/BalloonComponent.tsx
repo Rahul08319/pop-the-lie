@@ -129,9 +129,9 @@ export function BalloonComponent({ balloon, onPop }: BalloonProps) {
             className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-2.5 rounded-b-md bg-gradient-to-b ${scheme.bg}`}
           />
 
-          {/* Equation Display in SF Pro Tight Typography */}
+          {/* Equation Display in Chunky Arcade Typography */}
           <span
-            className="font-apple-display font-black text-sm tracking-tight text-center px-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+            className="font-arcade font-black text-sm tracking-wide text-center px-1.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.7)]"
             style={{ color: scheme.text }}
           >
             {balloon.equation.display}

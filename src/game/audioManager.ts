@@ -36,25 +36,63 @@ function playTone(frequency: number, duration: number, type: OscillatorType = 's
   }
 }
 
-export function playPopCorrect() {
-  // Happy ascending chime
-  playTone(600, 0.1, 'sine', 0.25);
-  setTimeout(() => playTone(800, 0.1, 'sine', 0.2), 50);
-  setTimeout(() => playTone(1000, 0.15, 'sine', 0.15), 100);
+export function playPopCorrect(combo = 0) {
+  if (!systemAudioEnabled) return;
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+
+    // 1. High-speed pitch sweep (the rubber pop "thwack")
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const baseFreq = Math.min(1200, 520 * Math.pow(1.06, Math.min(combo, 12)));
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(baseFreq * 1.8, now);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.4, now + 0.06);
+
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.08);
+
+    // 2. Ascending melodic chime chord
+    const chime = ctx.createOscillator();
+    const chimeGain = ctx.createGain();
+    chime.type = 'triangle';
+    chime.frequency.setValueAtTime(baseFreq, now + 0.02);
+    chimeGain.gain.setValueAtTime(0.18, now + 0.02);
+    chimeGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    chime.connect(chimeGain);
+    chimeGain.connect(ctx.destination);
+    chime.start(now + 0.02);
+    chime.stop(now + 0.22);
+  } catch {
+    // Audio unavailable
+  }
 }
 
 export function playPopWrong() {
-  // Buzzer sound
-  playTone(200, 0.3, 'sawtooth', 0.2);
-  setTimeout(() => playTone(150, 0.2, 'sawtooth', 0.15), 100);
+  if (!systemAudioEnabled) return;
+  // Dull rubber thud / buzzer
+  playTone(180, 0.22, 'sawtooth', 0.22);
+  setTimeout(() => playTone(120, 0.25, 'sawtooth', 0.25), 80);
 }
 
 export function playCombo() {
-  // Sparkly combo sound
-  playTone(800, 0.08, 'sine', 0.15);
-  setTimeout(() => playTone(1000, 0.08, 'sine', 0.15), 60);
-  setTimeout(() => playTone(1200, 0.08, 'sine', 0.15), 120);
-  setTimeout(() => playTone(1400, 0.12, 'sine', 0.2), 180);
+  // Sparkly fanfare combo chime
+  playTone(880, 0.08, 'sine', 0.18);
+  setTimeout(() => playTone(1100, 0.08, 'sine', 0.18), 50);
+  setTimeout(() => playTone(1320, 0.08, 'sine', 0.2), 100);
+  setTimeout(() => playTone(1760, 0.15, 'triangle', 0.25), 150);
+}
+
+export function playScoreTick() {
+  // Snappy arcade score counter tick
+  playTone(800, 0.03, 'sine', 0.08);
 }
 
 export function playGameOver() {
@@ -65,7 +103,8 @@ export function playGameOver() {
 }
 
 export function playButtonClick() {
-  playTone(500, 0.05, 'sine', 0.15);
+  // Crisp arcade tactile click
+  playTone(750, 0.04, 'triangle', 0.18);
 }
 
 export function playPowerUp() {

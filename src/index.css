@@ -146,6 +146,50 @@
     transform: scale(0.96);
   }
 
+  /* Arcade Game Typography */
+  .font-arcade {
+    font-family: "Fredoka One", -apple-system, BlinkMacSystemFont, "Nunito", cursive, sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  /* 3D Tactile Arcade Buttons */
+  .arcade-btn-green {
+    background: linear-gradient(180deg, #34d399 0%, #059669 100%);
+    box-shadow: 0 6px 0 #047857, 0 10px 25px rgba(5, 150, 105, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: transform 80ms ease, box-shadow 80ms ease;
+  }
+  .arcade-btn-green:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #047857, 0 4px 12px rgba(5, 150, 105, 0.4);
+  }
+
+  .arcade-btn-blue {
+    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+    box-shadow: 0 6px 0 #1d4ed8, 0 10px 25px rgba(37, 99, 235, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: transform 80ms ease, box-shadow 80ms ease;
+  }
+  .arcade-btn-blue:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #1d4ed8, 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+
+  .arcade-btn-gold {
+    background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+    box-shadow: 0 6px 0 #b45309, 0 10px 25px rgba(217, 119, 6, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    transition: transform 80ms ease, box-shadow 80ms ease;
+  }
+  .arcade-btn-gold:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #b45309, 0 4px 12px rgba(217, 119, 6, 0.4);
+  }
+
+  .arcade-title-shadow {
+    text-shadow: 0 4px 0 #0f172a, 0 8px 0 rgba(0, 0, 0, 0.7), 0 14px 28px rgba(0, 0, 0, 0.6);
+  }
+
   /* Apple Card Container */
   .apple-card {
     border-radius: 20px;
