@@ -12,10 +12,10 @@
 
 <br/>
 
-**A fast-paced, brain-sharpening reflex game built with Apple Design precision.**  
-Pop the false equations, protect the truth, chain high-multiplier combos, and compete globally across 13 web gaming platforms.
+**A fast-paced, brain-sharpening reflex arcade game powered by a high-performance 60FPS HTML5 Canvas 2D Game Engine.**  
+Slice and pop false equations with neon blade trails, protect the truth, chain high-multiplier combos, and compete globally across 13 web gaming platforms.
 
-[Features](#-key-features) • [YouTube Playables](#-youtube-playables-sdk-v1-specification) • [Multi-Platform](#-multi-platform-matrix-zero-playgama) • [Apple Design](#-apple-design-system--fluid-motion) • [Build & Deploy](#-build--deployment-pipeline)
+[Features](#-key-features) • [YouTube Playables](#-youtube-playables-sdk-v1-specification) • [Multi-Platform](#-multi-platform-matrix-zero-playgama) • [Canvas Game Engine](#-html5-canvas-game-engine) • [Build & Deploy](#-build--deployment-pipeline)
 
 </div>
 
@@ -23,11 +23,12 @@ Pop the false equations, protect the truth, chain high-multiplier combos, and co
 
 ## 🌟 Overview
 
-**Pop the Lie** flips the traditional math quiz on its head:  
+**Pop the Lie** is an action-packed math reflex arcade game:  
 Balloons rise up the screen with arithmetic statements. Your goal is not to solve them, but to **spot the impostors**:
 
-- **❌ False Equation?** Tap to pop immediately for points and combo multipliers!
+- **❌ False Equation?** Tap or slice with your finger/mouse to pop immediately for points and combo multipliers!
 - **✅ True Equation?** Let it rise safely into the sky! Popping a truth costs a life.
+- **⚡ 60FPS Canvas Physics:** Volumetric glossy balloons, trailing physics strings, 30+ particle burst explosions, shockwaves, and neon swipe blade trails.
 - **❄️ Power-Ups:** Freeze time, trigger 2× score multipliers, or collect extra hearts.
 - **🌍 Daily Challenge:** Synchronized global seed mode allowing players across the world to compete on an identical board once per day.
 

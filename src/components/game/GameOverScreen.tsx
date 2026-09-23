@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { GameState, Difficulty, DIFFICULTY_CONFIGS } from '@/game/types';
-import { StarField } from './StarField';
 import { playButtonClick, playScoreTick } from '@/game/audioManager';
 
 interface GameOverProps {
@@ -70,10 +69,9 @@ export function GameOverScreen({
 
   return (
     <div
-      className="fixed inset-0 w-screen h-screen overflow-hidden select-none touch-none overscroll-none bg-gradient-to-b from-[#180a14] via-[#151020] to-[#07050f] flex flex-col items-center justify-between p-4 sm:p-6"
+      className="fixed inset-0 w-screen h-screen overflow-hidden select-none touch-none overscroll-none bg-black/60 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 z-20"
       onContextMenu={(e) => e.preventDefault()}
     >
-      <StarField />
 
       {/* Header: GAME OVER */}
       <header className="relative z-20 text-center space-y-1 pt-2 animate-spring-in">

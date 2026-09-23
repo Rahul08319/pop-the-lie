@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { StarField } from './StarField';
-import { Difficulty, DIFFICULTY_CONFIGS, BALLOON_COLORS } from '@/game/types';
-import { playButtonClick, playPopCorrect, playPopWrong, toggleMusicMute, isMusicMuted } from '@/game/audioManager';
+import { useState } from 'react';
+import { Difficulty, DIFFICULTY_CONFIGS } from '@/game/types';
+import { playButtonClick, toggleMusicMute, isMusicMuted } from '@/game/audioManager';
 import { PlatformSelectorModal } from './PlatformSelectorModal';
 
 interface MainMenuProps {
@@ -11,27 +10,6 @@ interface MainMenuProps {
   onShowLeaderboard: () => void;
   onShowDailyLeaderboard: () => void;
 }
-
-interface MenuBalloon {
-  id: string;
-  x: number;
-  speed: number;
-  color: string;
-  equation: string;
-  isLie: boolean;
-  popped: boolean;
-}
-
-const MENU_EQUATIONS = [
-  { eq: '2 + 3 = 6', isLie: true },
-  { eq: '5 × 2 = 10', isLie: false },
-  { eq: '9 - 4 = 5', isLie: false },
-  { eq: '7 + 1 = 9', isLie: true },
-  { eq: '8 ÷ 2 = 3', isLie: true },
-  { eq: '4 × 3 = 12', isLie: false },
-  { eq: '6 + 7 = 14', isLie: true },
-  { eq: '10 - 6 = 4', isLie: false },
-];
 
 export function MainMenu({
   highScore,
@@ -47,63 +25,6 @@ export function MainMenu({
   const [showPowerUps, setShowPowerUps] = useState(false);
   const [muted, setMuted] = useState(isMusicMuted());
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
-
-  // Interactive ambient balloons for the title screen!
-  const [menuBalloons, setMenuBalloons] = useState<MenuBalloon[]>([]);
-  const [menuParticles, setMenuParticles] = useState<{ id: string; x: number; y: number; text: string }[]>([]);
-
-  // Spawn periodic interactive ambient balloons
-  useEffect(() => {
-    let idCounter = 0;
-    const interval = setInterval(() => {
-      setMenuBalloons((prev) => {
-        if (prev.filter(b => !b.popped).length >= 5) return prev;
-        const item = MENU_EQUATIONS[Math.floor(Math.random() * MENU_EQUATIONS.length)];
-        const color = BALLOON_COLORS[Math.floor(Math.random() * BALLOON_COLORS.length)];
-        const newBalloon: MenuBalloon = {
-          id: `menu-b-${++idCounter}`,
-          x: 10 + Math.random() * 80,
-          speed: 6 + Math.random() * 4,
-          color,
-          equation: item.eq,
-          isLie: item.isLie,
-          popped: false,
-        };
-        return [...prev.slice(-8), newBalloon];
-      });
-    }, 1800);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handlePopMenuBalloon = (b: MenuBalloon, e: React.PointerEvent) => {
-    e.stopPropagation();
-    if (b.popped) return;
-
-    if (b.isLie) {
-      playPopCorrect(1);
-    } else {
-      playPopWrong();
-    }
-
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const px = rect.left + rect.width / 2;
-    const py = rect.top;
-
-    setMenuParticles(prev => [
-      ...prev,
-      {
-        id: `p-${Date.now()}`,
-        x: px,
-        y: py,
-        text: b.isLie ? '💥 POP!' : '❌ TRUE!',
-      },
-    ]);
-
-    setMenuBalloons(prev =>
-      prev.map(item => item.id === b.id ? { ...item, popped: true } : item)
-    );
-  };
 
   const handleMuteToggle = () => {
     playButtonClick();
@@ -126,55 +47,11 @@ export function MainMenu({
 
   return (
     <div
-      className="fixed inset-0 w-screen h-screen overflow-hidden select-none touch-none overscroll-none bg-gradient-to-b from-[#0a0f1d] via-[#101827] to-[#060a12] flex flex-col justify-between items-center p-4 sm:p-6"
+      className="fixed inset-0 w-screen h-screen overflow-hidden select-none touch-none overscroll-none bg-black/25 flex flex-col justify-between items-center p-4 sm:p-6 pointer-events-none z-20"
       onContextMenu={(e) => e.preventDefault()}
     >
-      <StarField />
-
-      {/* Interactive Title Screen Balloons that the player can tap! */}
-      <div className="absolute inset-0 pointer-events-auto z-10 overflow-hidden">
-        {menuBalloons.map((b) => {
-          if (b.popped) return null;
-          return (
-            <div
-              key={b.id}
-              onPointerDown={(e) => handlePopMenuBalloon(b, e)}
-              className="absolute animate-float-up cursor-pointer active:scale-95 transition-transform hover:scale-105"
-              style={{
-                left: `${b.x}%`,
-                '--float-duration': `${b.speed}s`,
-              } as React.CSSProperties}
-            >
-              <div className="animate-sway flex flex-col items-center">
-                <div className="w-[72px] h-[88px] rounded-[50%_50%_50%_50%_/_40%_40%_60%_60%] bg-gradient-to-b from-blue-500 to-indigo-700 shadow-xl border border-white/30 flex items-center justify-center p-2 relative">
-                  <div className="absolute top-2 left-2.5 w-4 h-6 rounded-full bg-white/40 rotate-[-25deg]" />
-                  <span className="font-arcade text-white text-xs font-bold drop-shadow-md text-center">
-                    {b.equation}
-                  </span>
-                  <div className="absolute -bottom-1.5 w-3 h-2 bg-indigo-700 rounded-b-md" />
-                </div>
-                <div className="w-[1px] h-7 bg-white/30" />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Floating Particles for Title Screen Pops */}
-      {menuParticles.map((p) => (
-        <div
-          key={p.id}
-          className="fixed pointer-events-none animate-score-fly z-40"
-          style={{ left: p.x, top: p.y }}
-        >
-          <span className="font-arcade text-amber-300 font-extrabold text-lg drop-shadow-[0_2px_10px_rgba(251,191,36,0.8)]">
-            {p.text}
-          </span>
-        </div>
-      ))}
-
       {/* Top Arcade HUD Bar */}
-      <header className="relative z-20 w-full max-w-xl flex items-center justify-between">
+      <header className="relative z-20 w-full max-w-xl flex items-center justify-between pointer-events-auto">
         <div className="flex items-center gap-2">
           {/* Sound Toggle */}
           <button
@@ -205,7 +82,7 @@ export function MainMenu({
       </header>
 
       {/* Center Hero: 3D Bouncy Game Title & Action Area */}
-      <main className="relative z-20 flex flex-col items-center gap-5 my-auto w-full max-w-md">
+      <main className="relative z-20 flex flex-col items-center gap-5 my-auto w-full max-w-md pointer-events-auto">
         {/* Animated 3D Arcade Logo */}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold tracking-wider uppercase backdrop-blur-sm animate-pulse">
@@ -221,13 +98,13 @@ export function MainMenu({
             </div>
           </div>
 
-          <p className="font-arcade text-xs sm:text-sm text-sky-200/80 drop-shadow">
-            Pop Wrong Equations • Protect The Truth!
+          <p className="font-arcade text-xs sm:text-sm text-sky-200/90 drop-shadow">
+            Pop Wrong Equations • Slice The Lies!
           </p>
         </div>
 
         {/* Game Mode Switcher: Arcade Endless vs Daily Challenge */}
-        <div className="flex p-1 rounded-2xl bg-black/40 border border-white/15 backdrop-blur-lg w-full max-w-xs shadow-inner">
+        <div className="flex p-1 rounded-2xl bg-black/50 border border-white/15 backdrop-blur-lg w-full max-w-xs shadow-inner">
           <button
             onClick={() => { playButtonClick(); setSelectedMode('classic'); }}
             className={`flex-1 py-2 px-3 rounded-xl font-arcade text-xs transition-all flex items-center justify-center gap-1.5 ${
@@ -262,7 +139,7 @@ export function MainMenu({
                 className={`py-2 px-2 rounded-2xl border font-arcade text-xs flex flex-col items-center justify-center transition-all ${
                   isSelected
                     ? 'bg-white/20 border-white text-white shadow-[0_0_15px_rgba(255,255,255,0.3)] scale-105'
-                    : 'bg-black/30 border-white/10 text-white/60 hover:text-white'
+                    : 'bg-black/40 border-white/10 text-white/60 hover:text-white'
                 }`}
               >
                 <span className="text-base">{config.emoji}</span>
@@ -291,7 +168,7 @@ export function MainMenu({
       </main>
 
       {/* Bottom Arcade Control Toolbar */}
-      <footer className="relative z-20 w-full max-w-md flex items-center justify-center gap-3 pt-2">
+      <footer className="relative z-20 w-full max-w-md flex items-center justify-center gap-3 pt-2 pointer-events-auto">
         <button
           onClick={() => { playButtonClick(); onShowLeaderboard(); }}
           className="flex-1 py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 backdrop-blur-md text-white font-arcade text-xs flex items-center justify-center gap-1.5 shadow-lg transition-transform"
@@ -325,7 +202,7 @@ export function MainMenu({
       {/* Modal: How to Play */}
       {showHowToPlay && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-spring-in"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-spring-in pointer-events-auto"
           onClick={() => setShowHowToPlay(false)}
         >
           <div
@@ -347,7 +224,7 @@ export function MainMenu({
                 <span className="text-3xl">🎈❌</span>
                 <div>
                   <h3 className="font-arcade text-sm text-red-300 font-bold">Pop False Math</h3>
-                  <p className="text-xs text-white/70">Tap any balloon with a wrong equation (e.g. 2 + 2 = 5) to pop it for points!</p>
+                  <p className="text-xs text-white/70">Tap or slice any balloon with a wrong equation (e.g. 2 + 2 = 5) to pop it for points!</p>
                 </div>
               </div>
 
@@ -355,7 +232,7 @@ export function MainMenu({
                 <span className="text-3xl">🛡️✅</span>
                 <div>
                   <h3 className="font-arcade text-sm text-emerald-300 font-bold">Spare The Truth</h3>
-                  <p className="text-xs text-white/70">Let correct equations float away safely! Popping a correct one costs 1 life.</p>
+                  <p className="text-xs text-white/70">Let correct equations float away safely! Popping a correct equation costs 1 life.</p>
                 </div>
               </div>
 
@@ -363,7 +240,7 @@ export function MainMenu({
                 <span className="text-3xl">🔥✨</span>
                 <div>
                   <h3 className="font-arcade text-sm text-purple-300 font-bold">Streak High Combos</h3>
-                  <p className="text-xs text-white/70">Pop lies consecutively without mistakes to trigger fiery multiplier combos!</p>
+                  <p className="text-xs text-white/70">Slice and pop lies consecutively without mistakes to trigger fiery multiplier combos!</p>
                 </div>
               </div>
             </div>
@@ -381,7 +258,7 @@ export function MainMenu({
       {/* Modal: Power-Ups */}
       {showPowerUps && (
         <div
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-spring-in"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-spring-in pointer-events-auto"
           onClick={() => setShowPowerUps(false)}
         >
           <div
@@ -403,7 +280,7 @@ export function MainMenu({
                 <span className="text-3xl">❄️</span>
                 <div>
                   <h3 className="font-arcade text-sm text-blue-300 font-bold">Freeze Time</h3>
-                  <p className="text-xs text-white/70">Freezes all balloons on screen for 3.5 seconds so you can plan and pop!</p>
+                  <p className="text-xs text-white/70">Freezes all balloons on screen for 3.5 seconds so you can plan and slice!</p>
                 </div>
               </div>
 
@@ -436,7 +313,9 @@ export function MainMenu({
 
       {/* Platform Selector Modal */}
       {showPlatformModal && (
-        <PlatformSelectorModal onClose={() => setShowPlatformModal(false)} />
+        <div className="pointer-events-auto">
+          <PlatformSelectorModal onClose={() => setShowPlatformModal(false)} />
+        </div>
       )}
     </div>
   );
