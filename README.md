@@ -65,10 +65,8 @@ The YouTube Playables SDK script is guaranteed to execute **before any applicati
 - **`ytgame.engagement.sendScore({ value: score })`**: High scores are validated as non-negative safe integers (`Number.isSafeInteger`) and synchronized to YouTube's player UI.
 - **`ytgame.engagement.openYTContent({ id, contentType })`**: Allows opening related videos or playables.
 
-### 6. Built-in Monetization (Ads)
-- **Pre-roll Ads**: Managed automatically by YouTube during initial load.
-- **Interstitial Ads (`ytgame.ads.requestInterstitialAd()`)**: Triggered at natural breaks (Game Over, level transitions) with defensive error handling.
-- **Rewarded Ads (`ytgame.ads.requestRewardedAd('revive-life')`)**: Players can opt to watch an ad on the Game Over screen to revive with **+1 Life** and continue their streak. Unique, readable reward IDs with zero user data.
+### 6. No Monetization Integration
+This build deliberately does not call interstitial or rewarded-ad APIs. The game remains fully playable without monetization features.
 
 ### 7. Health Telemetry & Logging
 - **`ytgame.health.logError()`**: Reports runtime anomalies to YouTube telemetry.

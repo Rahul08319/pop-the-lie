@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Difficulty, DIFFICULTY_CONFIGS } from '@/game/types';
 import { playButtonClick, toggleMusicMute, isMusicMuted } from '@/game/audioManager';
 import { PlatformSelectorModal } from './PlatformSelectorModal';
+import { GameLanguage, getGameLanguage, setGameLanguage, strings } from '@/game/i18n';
+import { ACHIEVEMENTS, getUnlockedAchievements } from '@/game/achievements';
 
 interface MainMenuProps {
   highScore: number;
@@ -25,6 +27,10 @@ export function MainMenu({
   const [showPowerUps, setShowPowerUps] = useState(false);
   const [muted, setMuted] = useState(isMusicMuted());
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement));
+  const [language, setLanguage] = useState<GameLanguage>(getGameLanguage);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const text = strings(language);
+  const unlocked = getUnlockedAchievements();
 
   const handleMuteToggle = () => {
     playButtonClick();
@@ -99,7 +105,7 @@ export function MainMenu({
           </div>
 
           <p className="font-arcade text-xs sm:text-sm text-sky-200/90 drop-shadow">
-            Pop Wrong Equations • Slice The Lies!
+            {text.popLie}
           </p>
         </div>
 
@@ -177,6 +183,13 @@ export function MainMenu({
         </button>
 
         <button
+          onClick={() => setShowAchievements(value => !value)}
+          className="w-11 h-10 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 backdrop-blur-md text-white flex items-center justify-center text-sm shadow-lg transition-transform"
+          aria-label={`${text.achievements}: ${unlocked.length} of ${ACHIEVEMENTS.length}`}
+          aria-expanded={showAchievements}
+        >🏅</button>
+
+        <button
           onClick={() => { playButtonClick(); setShowHowToPlay(true); }}
           className="flex-1 py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/20 active:scale-95 border border-white/15 backdrop-blur-md text-white font-arcade text-xs flex items-center justify-center gap-1.5 shadow-lg transition-transform"
         >
@@ -198,6 +211,15 @@ export function MainMenu({
           <span>⚙️</span>
         </button>
       </footer>
+
+      <div className="absolute bottom-16 flex gap-1 pointer-events-auto" aria-label={text.settings}>
+        {(['en', 'hi', 'es'] as GameLanguage[]).map(option => <button key={option} onClick={() => { setGameLanguage(option); setLanguage(option); }} aria-pressed={language === option} className={`rounded px-2 py-1 text-[10px] font-bold ${language === option ? 'bg-amber-400 text-black' : 'bg-black/50 text-white'}`}>{option.toUpperCase()}</button>)}
+      </div>
+
+      {showAchievements && <div className="absolute inset-x-4 bottom-28 mx-auto max-w-md rounded-2xl border border-white/20 bg-[#141a28]/95 p-4 text-white pointer-events-auto" role="dialog" aria-label={text.achievements}>
+        <div className="flex justify-between mb-2"><strong>{text.achievements}</strong><button onClick={() => setShowAchievements(false)} aria-label="Close achievements">✕</button></div>
+        <div className="grid grid-cols-2 gap-2">{ACHIEVEMENTS.map(item => <div key={item.id} className={`rounded-xl p-2 text-xs ${unlocked.includes(item.id) ? 'bg-emerald-500/20' : 'bg-white/5 text-white/50'}`}>{unlocked.includes(item.id) ? item.icon : '🔒'} {item.title}</div>)}</div>
+      </div>}
 
       {/* Modal: How to Play */}
       {showHowToPlay && (

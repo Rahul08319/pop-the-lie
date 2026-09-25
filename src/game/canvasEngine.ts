@@ -398,7 +398,7 @@ export class GameEngine2D {
 
     const adapter = platformManager.getAdapter();
     adapter.gameplayStop?.();
-    void adapter.showInterstitialAd();
+    // Monetization is intentionally disabled for this YouTube Playables build.
     void adapter.sendScore(this.score);
     void adapter.saveData({ version: 1, highScore: this.highScore, lastSavedAt: Date.now() });
 
@@ -529,6 +529,23 @@ export class GameEngine2D {
     if (this.animFrameId) {
       cancelAnimationFrame(this.animFrameId);
     }
+  }
+
+  public getStateSnapshot() {
+    return {
+      score: this.score,
+      lives: this.lives,
+      level: this.level,
+      combo: this.combo,
+      status: this.state,
+      balloons: this.balloons.map(balloon => ({ id: balloon.id, x: Math.round(balloon.x), y: Math.round(balloon.y), equation: balloon.equation.display, isLie: !balloon.equation.isCorrect, powerUp: balloon.powerUp })),
+    };
+  }
+
+  public advanceTime(ms: number) {
+    const steps = Math.max(1, Math.round(ms / (1000 / 60)));
+    for (let index = 0; index < steps; index += 1) this.update(1 / 60);
+    this.render();
   }
 
   private update(dt: number) {

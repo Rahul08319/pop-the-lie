@@ -9,6 +9,8 @@ import { Leaderboard, addToLeaderboard } from './Leaderboard';
 import { NameInputDialog } from './NameInputDialog';
 import { DailyLeaderboard } from './DailyLeaderboard';
 import { submitDailyScore, hasSubmittedToday } from '@/game/dailyChallenge';
+import { useYouTubePlayables } from '@/game/youtubePlayables';
+import { AchievementId, unlockAchievements } from '@/game/achievements';
 
 export function GameArena() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -43,6 +45,11 @@ export function GameArena() {
   const [showNameInput, setShowNameInput] = useState(false);
   const [submittingDaily, setSubmittingDaily] = useState(false);
 
+  const award = (ids: AchievementId[]) => {
+    const newlyUnlocked = unlockAchievements(ids);
+    if (newlyUnlocked.length) showNotification(`🏅 Achievement: ${newlyUnlocked.map(id => id.replace('-', ' ')).join(', ')}`);
+  };
+
   // Initialize Canvas 2D Game Engine
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -65,6 +72,11 @@ export function GameArena() {
         bestCombo: Math.max(prev.bestCombo, cmb),
         balloonsPopped: engine.balloonsPopped,
       }));
+      const awards: AchievementId[] = [];
+      if (engine.balloonsPopped === 1) awards.push('first-pop');
+      if (cmb >= 5) awards.push('combo-5');
+      if (sc >= 250) awards.push('score-250');
+      if (awards.length) award(awards);
     };
 
     engine.onLivesUpdate = (lv) => {
@@ -76,6 +88,27 @@ export function GameArena() {
     return () => {
       engine.destroy();
     };
+  }, []);
+
+  useYouTubePlayables({
+    onLoaded: (save) => setGameState(prev => ({ ...prev, highScore: Math.max(prev.highScore, save.highScore) })),
+    onPause: () => {
+      engineRef.current?.pause();
+      setEngineState('paused');
+      setGameState(prev => ({ ...prev, status: 'paused' }));
+    },
+    onResume: () => {
+      engineRef.current?.resume();
+      setEngineState('playing');
+      setGameState(prev => ({ ...prev, status: 'playing' }));
+    },
+    getSave: () => ({ version: 1, highScore: gameState.highScore }),
+  });
+
+  useEffect(() => {
+    window.render_game_to_text = () => JSON.stringify({ coordinateSystem: 'canvas pixels: origin top-left, x right, y down', ...engineRef.current?.getStateSnapshot() });
+    window.advanceTime = (ms) => engineRef.current?.advanceTime(ms);
+    return () => { delete window.render_game_to_text; delete window.advanceTime; };
   }, []);
 
   const handleStartGame = (diff: Difficulty, mode: 'classic' | 'daily' = 'classic') => {
@@ -113,16 +146,6 @@ export function GameArena() {
     engineRef.current?.quitToMenu();
   };
 
-  const handleRewardedRevive = async () => {
-    if (!engineRef.current) return false;
-    const ok = await engineRef.current.triggerRewardedRevive();
-    if (ok) {
-      setEngineState('playing');
-      setGameState(prev => ({ ...prev, status: 'playing', lives: 1 }));
-    }
-    return ok;
-  };
-
   return (
     <div
       className="fixed inset-0 w-screen h-screen overflow-hidden select-none touch-none overscroll-none bg-[#070a13]"
@@ -132,6 +155,8 @@ export function GameArena() {
       <canvas
         ref={canvasRef}
         className="fixed inset-0 w-full h-full touch-none select-none z-0"
+        tabIndex={0}
+        aria-label="Pop the Lie game canvas. Tap or click false equations."
       />
 
       {/* In-Game HUD: Score, Lives, Combo Flame, Pause */}
@@ -163,8 +188,8 @@ export function GameArena() {
       {engineState === 'gameover' && !showNameInput && (
         <GameOverScreen
           gameState={gameState}
-          canRevive={engineRef.current?.canRevive ?? false}
-          onRewardedRevive={handleRewardedRevive}
+          canRevive={false}
+          onRewardedRevive={async () => false}
           onRestart={(diff) => handleStartGame(diff, gameState.mode)}
           onShowLeaderboard={() => setShowLeaderboard(true)}
           onShowDailyLeaderboard={() => setShowDailyLeaderboard(true)}
@@ -182,14 +207,15 @@ export function GameArena() {
             if (isDaily && !hasSubmittedToday()) {
               setSubmittingDaily(true);
               try {
-                await submitDailyScore({
+                const result = await submitDailyScore({
                   name,
                   score: gameState.score,
                   level: gameState.level,
                   bestCombo: gameState.bestCombo,
                   difficulty: gameState.difficulty,
                 });
-                showNotification('🌍 Score submitted to the global board!');
+                award(['daily-player']);
+                showNotification(result.offline ? '📱 Daily score saved offline.' : '🌍 Score submitted to the global board!');
               } catch (e: any) {
                 console.error('Daily submit failed', e);
                 showNotification('⚠️ Could not submit score. Try again later.');
