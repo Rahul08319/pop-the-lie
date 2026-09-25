@@ -15,6 +15,7 @@ export interface DailyScore {
 
 const SUBMITTED_KEY = 'popTheLie_dailySubmitted';
 const DEVICE_ID_KEY = 'popTheLie_deviceId';
+const OFFLINE_SCORES_KEY = 'popTheLie_offlineDailyScores';
 
 export function getDeviceId(): string {
   let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -33,6 +34,30 @@ export function hasSubmittedToday(): boolean {
 
 export function markSubmittedToday() {
   localStorage.setItem(SUBMITTED_KEY, todaySeedString());
+}
+
+export function getOfflineDailyScores(): DailyScore[] {
+  try {
+    return JSON.parse(localStorage.getItem(OFFLINE_SCORES_KEY) || '[]') as DailyScore[];
+  } catch {
+    return [];
+  }
+}
+
+function saveOfflineDailyScore(input: { name: string; score: number; level: number; bestCombo: number }) {
+  const score: DailyScore = {
+    id: `offline-${Date.now()}`,
+    player_name: input.name.slice(0, 20),
+    score: Math.max(0, Math.floor(input.score)),
+    level: input.level,
+    best_combo: input.bestCombo,
+    challenge_seed: todaySeedString(),
+    created_at: new Date().toISOString(),
+    device_id: getDeviceId(),
+  };
+  const scores = getOfflineDailyScores().filter((item) => item.challenge_seed !== score.challenge_seed);
+  scores.push(score);
+  localStorage.setItem(OFFLINE_SCORES_KEY, JSON.stringify(scores.slice(-30)));
 }
 
 export async function hasSubmittedTodayRemote(): Promise<boolean> {
@@ -80,9 +105,13 @@ export async function submitDailyScore(input: {
       markSubmittedToday();
       throw new Error('This device has already submitted a score for today.');
     }
-    throw error;
+    // A Daily Challenge remains playable when the leaderboard is unavailable.
+    saveOfflineDailyScore(input);
+    markSubmittedToday();
+    return { offline: true };
   }
   markSubmittedToday();
+  return { offline: false };
 }
 
 export async function fetchDailyLeaderboard(limit = 50): Promise<DailyScore[]> {
@@ -93,6 +122,8 @@ export async function fetchDailyLeaderboard(limit = 50): Promise<DailyScore[]> {
     .eq('challenge_seed', seed)
     .order('score', { ascending: false })
     .limit(limit);
-  if (error) throw error;
-  return (data ?? []) as DailyScore[];
+  if (error) return getOfflineDailyScores().filter((score) => score.challenge_seed === seed);
+  const remote = (data ?? []) as DailyScore[];
+  const offline = getOfflineDailyScores().filter((score) => score.challenge_seed === seed);
+  return [...remote, ...offline].sort((a, b) => b.score - a.score).slice(0, limit);
 }
